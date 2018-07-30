@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\APP;..\Libraries\CMSIS;..\Libraries\FWlib\inc;..\BSP\LED;..\BSP\USART;..\BSP\DELAY;..\BSP\FLASH;..\BSP\KEY;..\BSP\CAN;..\BSP\ADS1256;..\BSP\G6A</IncludePath>
+              <IncludePath>..\APP;..\Libraries\CMSIS;..\Libraries\FWlib\inc;..\BSP\LED;..\BSP\USART;..\BSP\DELAY;..\BSP\FLASH;..\BSP\KEY;..\BSP\CAN;..\BSP\ADS1256;..\BSP\G6A;..\APP\GongKong</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -406,6 +406,11 @@
               <FileType>5</FileType>
               <FilePath>..\APP\app_includes.h</FilePath>
             </File>
+            <File>
+              <FileName>gongkong.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\GongKong\gongkong.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -440,6 +445,11 @@
               <FileName>ADS1256.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\ADS1256\ADS1256.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\FLASH\flash.c</FilePath>
             </File>
           </Files>
         </Group>

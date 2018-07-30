@@ -21,6 +21,7 @@
 #include "can.h"
 #include "g6a.h"
 #include "ADS1256.h"
+#include "gongkong.h"
 
 
 

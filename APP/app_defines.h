@@ -4,6 +4,8 @@
 #define __APP_DEFINES_H__
 #include "app_includes.h"
 
+#define FLASH_SAVE_ADDR 		0X0800FC00		//设置FLASH 保存地址(必须为偶数，且其值要大于本代码所占用FLASH的大小+0X08000000)
+
 //LED0 引脚定义
 #define LED0_RCC				RCC_APB2Periph_GPIOA
 #define LED0_GPIOx				GPIOA

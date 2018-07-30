@@ -22,7 +22,7 @@
 *****************************************************************************/
 #include "flash.h"
 
-#define FLASH_SAVE_ADDR 		0X0800FC00		//设置FLASH 保存地址(必须为偶数，且其值要大于本代码所占用FLASH的大小+0X08000000)
+
 
 
 /************************************************* 
@@ -44,7 +44,6 @@ uint16_t STMFLASH_ReadHalfWord(uint32_t faddr)
 
 #if STM32_FLASH_WREN //如果使能了写 
 
-
 /************************************************* 
  函数: STMFLASH_Write_NoCheck(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
  描述: 不检查的写入
@@ -55,16 +54,16 @@ uint16_t STMFLASH_ReadHalfWord(uint32_t faddr)
  返回: 
  调用方法: 
 	1、
-*************************************************/ 
+*************************************************/
 void STMFLASH_Write_NoCheck(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 {
 	uint16_t		i;
 
 	for (i = 0; i < NumToWrite; i++)
-	{
+		{
 		FLASH_ProgramHalfWord(WriteAddr, pBuffer[i]);
 		WriteAddr			+= 2;					//地址增加2.
-	}
+		}
 }
 
 
@@ -90,7 +89,7 @@ uint16_t		STMFLASH_BUF[STM_SECTOR_SIZE / 2]; //最多是2K字节
  返回: 
  调用方法: 
 	1、
-*************************************************/ 
+*************************************************/
 void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 {
 	uint32_t		secpos; 						//扇区地址
@@ -112,33 +111,33 @@ void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 		secremain = NumToWrite; //不大于该扇区范围
 
 	while (1)
-	{
+		{
 		STMFLASH_Read(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE, STMFLASH_BUF, STM_SECTOR_SIZE / 2); //读出整个扇区的内容
 
 		for (i = 0; i < secremain; i++) //校验数据
-		{
+			{
 			if (STMFLASH_BUF[secoff + i] != 0XFFFF)
 				break; //需要擦除	  
-		}
+			}
 
 		if (i < secremain) //需要擦除
-		{
+			{
 			FLASH_ErasePage(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE); //擦除这个扇区
 
 			for (i = 0; i < secremain; i++) //复制
-			{
+				{
 				STMFLASH_BUF[i + secoff] = pBuffer[i];
-			}
+				}
 
 			STMFLASH_Write_NoCheck(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE, STMFLASH_BUF, STM_SECTOR_SIZE / 2); //写入整个扇区  
-		}
+			}
 		else 
 			STMFLASH_Write_NoCheck(WriteAddr, pBuffer, secremain); //写已经擦除了的,直接写入扇区剩余区间.				   
 
 		if (NumToWrite == secremain)
 			break; //写入结束了
 		else //写入未结束
-		{
+			{
 			secpos++;								//扇区地址增1
 			secoff				= 0;				//偏移位置为0	 
 			pBuffer 			+= secremain;		//指针偏移
@@ -149,8 +148,8 @@ void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 				secremain = STM_SECTOR_SIZE / 2; //下一个扇区还是写不完
 			else 
 				secremain = NumToWrite; //下一个扇区可以写完了
-		}
-	};
+			}
+		};
 
 	FLASH_Lock();									//上锁
 }
@@ -164,22 +163,22 @@ void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
  函数: STMFLASH_Read(uint32_t ReadAddr, uint16_t * pBuffer, uint16_t NumToRead)
  描述: 从指定地址开始读出指定长度的数据
  输入: 
-    1、ReadAddr:起始地址
-    2、pBuffer:数据指针
-    3、NumToWrite:半字(16位)数
+	1、ReadAddr:起始地址
+	2、pBuffer:数据指针
+	3、NumToWrite:半字(16位)数
  返回: 
  调用方法: 
-    1、
-*************************************************/ 
+	1、
+*************************************************/
 void STMFLASH_Read(uint32_t ReadAddr, uint16_t * pBuffer, uint16_t NumToRead)
 {
 	uint16_t		i;
 
 	for (i = 0; i < NumToRead; i++)
-	{
+		{
 		pBuffer[i]			= STMFLASH_ReadHalfWord(ReadAddr); //读取2个字节.
 		ReadAddr			+= 2;					//偏移2个字节.	
-	}
+		}
 }
 
 
@@ -189,11 +188,11 @@ void STMFLASH_Read(uint32_t ReadAddr, uint16_t * pBuffer, uint16_t NumToRead)
  函数: FLASH_Write_Test(uint32_t WriteAddr, uint16_t WriteData)
  描述: FLASH写入测试程序
  输入: 
-    1、WriteAddr:起始地址
-    2、WriteData:要写入的数据
+	1、WriteAddr:起始地址
+	2、WriteData:要写入的数据
  返回: 
  调用方法: 
-    1、
+	1、
 *************************************************/
 void FLASH_Write_Test(uint32_t WriteAddr, uint16_t WriteData)
 {
