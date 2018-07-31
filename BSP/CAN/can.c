@@ -43,6 +43,8 @@ extern u8		CanReceiveState; //CAN接收不定长度字符串结束标识符
 extern u8		CanReceiveCounter; //CAN接收到的字符串个数
 extern u8		CanBuffer[20];
 
+extern u16		MyID;
+extern long double VolRate;
 
 /************************************************* 
  函数: CAN_NVIC_Config(void)
@@ -203,7 +205,7 @@ void CAN_Config(void)
  调用方法: 
 	1、CAN_Send(0x1234, "12345678");
 *************************************************/
-void CAN_Send(u32 ExtId, char * str)
+void CAN_Send(u32 ExtId, u8 * str, u8 len)
 {
 	__IO uint32_t	i	= 0;
 	__IO uint8_t	TransmitMailbox = 0;
@@ -212,7 +214,7 @@ void CAN_Send(u32 ExtId, char * str)
 	TxMessage.ExtId 	= ExtId;					//使用的扩展ID
 	TxMessage.IDE		= CAN_ID_EXT;				//扩展模式
 	TxMessage.RTR		= CAN_RTR_DATA; 			//发送的是数据
-	TxMessage.DLC		= strlen(str);				//设定待传输消息的帧长度
+	TxMessage.DLC		= len;						//设定待传输消息的帧长度
 
 	while (*str)
 	{
@@ -314,15 +316,16 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	}
 }
 
+
 /************************************************* 
  函数: USB_LP_CAN1_RX0_IRQHandler(void)
  描述: 简单的CAN1接收中断服务函数，直接将接收到的数据打印出来
  输入: 
-    1、
-    2、
+	1、
+	2、
  返回: 
  调用方法: 
-    1、中断调用
+	1、中断调用
 *************************************************/
 /*void USB_LP_CAN1_RX0_IRQHandler(void)
 {
@@ -339,6 +342,145 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);			//使能CAN1数据接收中断
 }*/
+void Can_Work(void)
+{
+	u8				CAN_data_com, i;
+	u16 			ID_1, ID_2;
+	long double 	ldVolutage;
+	u8 *			p;
+
+	if (CanReceiveState == 1)
+	{
+		if (CanBuffer[0] == 0x50 || CanBuffer[0] == 0x55)
+		{
+			CAN_data_com		= CanBuffer[2];
+			ID_1				= CanBuffer[3] << 8 | CanBuffer[4];
+			ID_2				= CanBuffer[5] << 8 | CanBuffer[6];
+
+			switch (CAN_data_com)
+			{
+				case 0x00: //主机向从机发送设置ID指令+ 修改从机地址+修改后从机地址
+					if (MyID == ID_1 || ID_1 == 0xFFFF)
+					{
+						Flash_Write_ID(ID_2);
+						Can_Send_Data(MyID, 0x11, (u8 *) &MyID, 2);
+					}
+
+					break;
+
+				case 0x01: //主机 向从机请求电压数据指令+从机地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+						p					= (u8 *) &ldVolutage;
+						Can_Send_Data(MyID, 0x04, p, 2);
+						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					}
+
+					break;
+
+				case 0x02: //主机向从机请求电流数据指令+从机地址 
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						ldVolutage = Git_Vol_ByAIN(VOL_CIN) *VolRate/10;
+						p					= (u8 *) &ldVolutage;
+						Can_Send_Data(MyID, 0x05, p, 2);
+					}
+
+					break;
+
+				case 0x03:
+					//				ldVolutage = (long double)data;
+					//				printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					//				ulResult = data;
+					break;
+
+				case 0x04: //主机接收从机电压数据
+					p = (u8 *) &ldVolutage;
+
+					for (i = 0; i < CanBuffer[1] -3; i++)
+					{
+						*p					= CanBuffer[3 + i];
+						p++;
+					}
+
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					break;
+
+				case 0x05: //主机接收从机电流数据
+					p = (u8 *) &ldVolutage;
+
+					for (i = 0; i < CanBuffer[1] -3; i++)
+					{
+						*p					= CanBuffer[3 + i];
+						p++;
+					}
+
+					printf("The Curr = %Lf mA\r\n", ldVolutage);
+					break;
+
+				case 0x11: //从机向主机发送自己的ID
+					Can_Send_Data(MyID, 0x06, (u8 *) &MyID, 2);
+					break;
+
+				case 0x15: //主机向从机发送请求ID指令
+					ID_1 = 0x80;
+					ID_1 = ID_1 << 8 | 0x00;
+					CAN_Send(MyID, (u8 *) &ID_1, 2);
+					break;
+
+				case 0x20: //负向供电指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						G6A_RELAY1(OFF);
+						G6A_RELAY2(OFF);
+						PN_PP_EN(ON);
+						P_D_EN(ON);
+					}
+
+					break;
+
+				case 0x21: //正向供电功能（电流表）指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						PN_PP_EN(ON);
+						P_D_EN(OFF);
+						Vol_Calibrate_ByADR4525();
+						G6A_RELAY1(ON);
+
+						ldVolutage			= Git_Vol_ByAIN(VOL_VIN) *VolRate;
+						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+						G6A_RELAY1(OFF);
+					}
+
+					break;
+
+				case 0x22: //检测（电压表）指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						PN_PP_EN(ON);
+						P_D_EN(OFF);
+						Vol_Calibrate_ByADR4525();
+						G6A_RELAY2(ON);
+
+						ldVolutage			= Git_Vol_ByAIN(VOL_CIN) *VolRate/10;
+						printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+						G6A_RELAY2(OFF);
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		CanReceiveState 	= 0;
+	}
+
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

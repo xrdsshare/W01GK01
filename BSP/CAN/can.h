@@ -10,8 +10,9 @@ static void CAN_NVIC_Config(void);
 static void CAN_Mode_Config(void);
 static void CAN_Filter_Config(u32 filterID, u16 maskIdHigh, u16 maskIdLow);
 void CAN_Config(void);
-void CAN_Send(u32 ExtId, char * str);
+void CAN_Send(u32 ExtId, u8 * str, u8 len);
 void USB_LP_CAN1_RX0_IRQHandler(void);
+void Can_Work(void);
 void Can_Text(void);
 
 

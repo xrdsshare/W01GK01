@@ -19,7 +19,8 @@
 	4、添加 usart1.h 头文件编译路径
 	5、编写终端服务函数 USART1_IRQHandler()
 	6、主函数添加下列声明
-		//用volatile定义的变量会在程序外被改变,每次都必须从内存中读取，而不能重复使用放在cache或寄存器中的备份。
+		//用volatile定义的变量会在程序外被改变,每次都必须从内存中读取，而不能重复使用
+	放在cache或寄存器中的备份。
 		volatile u8 	Usart1Buffer[20] = {0x00};
 		volatile u8 	Usart1ReceiveState = 0; //串口1接收不定长度字符串结束标识符
 		volatile u8 	Usart1ReceiveCounter = 0; //串口1接收到的字符串个数
@@ -32,6 +33,8 @@ extern u8		Usart1Buffer[20];
 extern u8		Usart1ReceiveState; //串口1接收不定长度字符串结束标识符
 extern u8		Usart1ReceiveCounter; //串口1接收到的字符串个数
 
+extern u16		MyID;
+extern long double VolRate;
 
 
 /************************************************* 
@@ -305,10 +308,87 @@ void USART1_IRQHandler(void)
 	{
 		usart1Clear 		= USART1->SR;			//读取SR寄存器
 		usart1Clear 		= USART1->DR;			//读取DR寄存器（想读取SR，在读取DR，是为了清除IDLE中断）
+
 		Usart1ReceiveState	= 1;
 	}
 
 }
+
+
+void USART1_Work(void)
+{
+	u8				com;
+	long double 	ldVolutage;
+	if (Usart1ReceiveState == 1) //如果接收到1帧数据
+	{
+		Usart1ReceiveState	= 0;
+
+		if (Usart1Buffer[0] == 0xAA)
+		{
+			com 				= Usart1Buffer[2];
+
+			switch (com)
+			{
+				case 0x00: //设置ID指令+ 修改从机地址+修改后从机地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x01: //向从机请求电压数据指令+从机地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x02: //向从机请求电流数据指令+从机地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x03: //向从机请求电压电流数据指令+从机地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x11: //修改本机地址+修改后ID
+					MyID = Usart1Buffer[3] << 8 | Usart1Buffer[4];
+					Flash_Write_ID(MyID);
+					USART1_Char(0x30);
+					USART1_Char(0x31);
+					USART1_Char(0x32);
+					break;
+
+				case 0x12: //读取本机电压数据指令
+					ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					break;
+
+				case 0x13: //读取本机电流数据指令
+					ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					break;
+
+				case 0x14: //读取本机2.5标准电压指令
+					ldVolutage = Git_Vol_ByAIN(VOL_ADR) *VolRate;
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					break;
+
+				case 0x20: //负向供电指令 + ID地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x21: //正向供电功能（电流表）指令 + ID地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x22: //检测（电压表）指令 + ID地址
+					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		Usart1ReceiveCounter = 0;
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 

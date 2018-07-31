@@ -10,8 +10,8 @@ History:
 #include "gongkong.h"
 
 extern u16		MyID;
-extern long			VolAGND;
-extern long double 	VolRate;
+extern long 	VolAGND;
+extern long double VolRate;
 
 
 
@@ -59,28 +59,51 @@ void Flash_Write_ID(uint16_t FMyID)
 *************************************************/
 long Git_Vol_ByAIN(char AIN_n)
 {
-	long			ulResult;
+	long			ulResult0, ulResult1, ulResult2;
 
 	//			ulResult = ADS_sum( (i << 4) | ADS1256_MUXN_AINCOM);	//多通道测试
-	ulResult			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
 
-	if (ulResult & 0x800000)
+	if (ulResult0 & 0x800000)
 	{
-		ulResult			= ~(unsigned long)
-		ulResult;
-		ulResult			&= 0x7fffff;
-		ulResult			+= 1;
-		ulResult			= -ulResult;
+		ulResult0			= ~(unsigned long)
+		ulResult0;
+		ulResult0			&= 0x7fffff;
+		ulResult0			+= 1;
+		ulResult0			= -ulResult0;
 	}
 
-	return ulResult;
+	ulResult1			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+
+	if (ulResult1 & 0x800000)
+	{
+		ulResult1			= ~(unsigned long)
+		ulResult1;
+		ulResult1			&= 0x7fffff;
+		ulResult1			+= 1;
+		ulResult1			= -ulResult1;
+	}
+
+	ulResult2			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+
+	if (ulResult2 & 0x800000)
+	{
+		ulResult2			= ~(unsigned long)
+		ulResult2;
+		ulResult2			&= 0x7fffff;
+		ulResult2			+= 1;
+		ulResult2			= -ulResult2;
+	}
+
+	return (ulResult0 + ulResult1 + ulResult2) / 3;
 }
 
 
 //can发送电压数据
 void Send_Vol_Long(void)
 {
-	long			ulResult = Git_Vol_ByAIN(VOL_IN);
+	long			ulResult = Git_Vol_ByAIN(VOL_VIN);
 
 	//	char *q = (char*)&ldVolutage;
 	//	CAN_Send(MyID, q, 8);
@@ -102,7 +125,6 @@ void Get_Elc_ByUSART(void)
 }
 */
 
-
 /************************************************* 
 	Function:	Git_Vol
 	Description:	通过long类型数据获取电压数据
@@ -119,11 +141,11 @@ long double Git_Vol(void)
 	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
 
 	G6A_RELAY1(ON);
-	Delay(0x5555);
+	Delay_ms(100);
 
-	Git_Vol_ByAIN(VOL_IN);
-	Git_Vol_ByAIN(VOL_IN);
-	vol_long			= Git_Vol_ByAIN(VOL_IN);
+	Git_Vol_ByAIN(VOL_VIN);
+	Git_Vol_ByAIN(VOL_VIN);
+	vol_long			= Git_Vol_ByAIN(VOL_VIN);
 	vol_Data			= vol_long * VolRate;
 
 	printf("Vol long:%d\n", vol_long);
@@ -141,28 +163,54 @@ long double Git_Vol(void)
 *************************************************/
 void Vol_Calibrate_ByADR4525(void)
 {
-	long double 	vol_Data;
-	long			vol_long;
+//	long double 	vol_Data;
+//	long			vol_long;
 
-	Git_Vol_ByAIN(VOL_AGND);						//扔掉第一次不准确的值
-	Git_Vol_ByAIN(VOL_AGND);
-	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
-	printf("VolAGND long:%X\n", VolAGND);
+//	Git_Vol_ByAIN(VOL_AGND);						//扔掉第一次不准确的值
+//	Git_Vol_ByAIN(VOL_AGND);
+//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
+//	printf("VolAGND long:%X\n", VolAGND);
 
-	Git_Vol_ByAIN(VOL_IN);							//扔掉第一次不准确的值
-	Git_Vol_ByAIN(VOL_IN);
-	vol_long			= Git_Vol_ByAIN(VOL_IN);
-	printf("vol_long long:%X\n", vol_long);
+//	Git_Vol_ByAIN(VOL_VIN);							//扔掉第一次不准确的值
+//	Git_Vol_ByAIN(VOL_VIN);
+//	vol_long			= Git_Vol_ByAIN(VOL_VIN);
+//	printf("vol_long long:%X\n", vol_long);
 
-	VolRate 			= (2.5 * 1000000) / (vol_long - VolAGND);
+//	VolRate 			= (2.5 * 1000000) / (vol_long - VolAGND);
 
-	vol_Data			= VolRate * (vol_long - VolAGND);
+//	vol_Data			= VolRate * (vol_long - VolAGND);
 
 	//	printf("\r\n*******************************************************\r\n");
 	//	printf("\r\nThe V_2.5 = %Lf V\r\n", vol_Data / 1000000);
 	//	printf("The V_AGND = %Lf V\r\n", VolAGND * VolRate / 1000000);
 	//	printf("The VolRate = %Lf V\r\n", VolRate);
 	//	printf("\r\n*******************************************************\r\n");
+}
+
+
+void Can_Send_Data(u16 sid, u8 com, u8 * p, u8 len)
+{
+	u8				temp[20];
+	u8				i;
+
+	if (len < 6)
+	{
+		temp[0] 			= 0x50;
+	}
+	else 
+	{
+		temp[0] 			= 0x55;
+	}
+
+	temp[1] 			= len + 3;
+	temp[2] 			= com;
+
+	for (i = 0; i < len; ++i)
+	{
+		temp[i + 3] 		= * (p + i);
+	}
+
+	CAN_Send(MyID, temp, temp[1]);
 }
 
 
@@ -183,9 +231,9 @@ long double Git_Curr(void)
 	G6A_RELAY1_CMD(ON);
 	Delay(0x5555);
 
-	Git_Vol_ByAIN(VOL_IN);
-	Git_Vol_ByAIN(VOL_IN);
-	vol_long			= Git_Vol_ByAIN(VOL_IN);
+	Git_Vol_ByAIN(VOL_VIN);
+	Git_Vol_ByAIN(VOL_VIN);
+	vol_long			= Git_Vol_ByAIN(VOL_VIN);
 	vol_Data			= vol_long * VolRate;
 	G6A_RELAY1_CMD(OFF);
 	G6A_RELAY2_CMD(OFF);
@@ -195,7 +243,6 @@ long double Git_Curr(void)
 }
 */
 
-
 /************************************************* 
 	Function:	Delay
 	Description:	简单延时函数
@@ -203,10 +250,8 @@ long double Git_Curr(void)
 	Return:	 
 	Others:	 
 *************************************************/
-void Delay(__IO uint32_t nCount)
-{
-	for (; nCount != 0; nCount--)
-		;
-}
-
-
+//void Delay(__IO uint32_t nCount)
+//{
+//	for (; nCount != 0; nCount--)
+//		;
+//}
