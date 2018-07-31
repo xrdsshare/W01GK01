@@ -140,7 +140,7 @@ long double Git_Vol(void)
 	//	Vol_Calibrate_ByADR4525();						//每次测量前进行一次自校准
 	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
 
-	G6A_RELAY1(ON);
+	G6A_Vol(ON);
 	Delay_ms(100);
 
 	Git_Vol_ByAIN(VOL_VIN);
@@ -149,7 +149,7 @@ long double Git_Vol(void)
 	vol_Data			= vol_long * VolRate;
 
 	printf("Vol long:%d\n", vol_long);
-	G6A_RELAY1(OFF);
+	G6A_Vol(OFF);
 	return vol_Data;
 }
 
@@ -163,23 +163,18 @@ long double Git_Vol(void)
 *************************************************/
 void Vol_Calibrate_ByADR4525(void)
 {
-//	long double 	vol_Data;
-//	long			vol_long;
-
-//	Git_Vol_ByAIN(VOL_AGND);						//扔掉第一次不准确的值
-//	Git_Vol_ByAIN(VOL_AGND);
-//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
-//	printf("VolAGND long:%X\n", VolAGND);
-
-//	Git_Vol_ByAIN(VOL_VIN);							//扔掉第一次不准确的值
-//	Git_Vol_ByAIN(VOL_VIN);
-//	vol_long			= Git_Vol_ByAIN(VOL_VIN);
-//	printf("vol_long long:%X\n", vol_long);
-
-//	VolRate 			= (2.5 * 1000000) / (vol_long - VolAGND);
-
-//	vol_Data			= VolRate * (vol_long - VolAGND);
-
+	//	long double 	vol_Data;
+	//	long			vol_long;
+	//	Git_Vol_ByAIN(VOL_AGND);						//扔掉第一次不准确的值
+	//	Git_Vol_ByAIN(VOL_AGND);
+	//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
+	//	printf("VolAGND long:%X\n", VolAGND);
+	//	Git_Vol_ByAIN(VOL_VIN);							//扔掉第一次不准确的值
+	//	Git_Vol_ByAIN(VOL_VIN);
+	//	vol_long			= Git_Vol_ByAIN(VOL_VIN);
+	//	printf("vol_long long:%X\n", vol_long);
+	//	VolRate 			= (2.5 * 1000000) / (vol_long - VolAGND);
+	//	vol_Data			= VolRate * (vol_long - VolAGND);
 	//	printf("\r\n*******************************************************\r\n");
 	//	printf("\r\nThe V_2.5 = %Lf V\r\n", vol_Data / 1000000);
 	//	printf("The V_AGND = %Lf V\r\n", VolAGND * VolRate / 1000000);
@@ -188,7 +183,7 @@ void Vol_Calibrate_ByADR4525(void)
 }
 
 
-void Can_Send_Data(u16 sid, u8 com, u8 * p, u8 len)
+void Can_Send_Data(u8 com, u8 * p, u8 len)
 {
 	u8				temp[20];
 	u8				i;
@@ -211,6 +206,26 @@ void Can_Send_Data(u16 sid, u8 com, u8 * p, u8 len)
 	}
 
 	CAN_Send(MyID, temp, temp[1]);
+}
+
+
+/************************************************* 
+ 函数: Can_Seng_ID(u8 com, u16 SID)
+ 描述: 使用CAN发送ID
+ 输入: 
+	1、com 发送的命令指令
+	2、SID 要发送的ID数据
+ 返回: 
+ 调用方法: 
+	1、直接调用
+*************************************************/
+void Can_Seng_ID(u8 com, u16 SID)
+{
+	u16 			Temp;
+
+	Temp				= SID;
+	Temp				= Temp << 8 | SID >> 8;
+	Can_Send_Data(com, (u8 *) &Temp, 2);
 }
 
 
@@ -242,16 +257,3 @@ long double Git_Curr(void)
 	return vol_Data / 10000;
 }
 */
-
-/************************************************* 
-	Function:	Delay
-	Description:	简单延时函数
-	Input:	1.nCount 延时时间常数
-	Return:	 
-	Others:	 
-*************************************************/
-//void Delay(__IO uint32_t nCount)
-//{
-//	for (; nCount != 0; nCount--)
-//		;
-//}

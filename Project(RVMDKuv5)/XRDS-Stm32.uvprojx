@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\APP;..\Libraries\CMSIS;..\Libraries\FWlib\inc;..\BSP\LED;..\BSP\USART;..\BSP\DELAY;..\BSP\FLASH;..\BSP\KEY;..\BSP\CAN;..\BSP\ADS1256;..\BSP\G6A;..\APP\GongKong</IncludePath>
+              <IncludePath>..\APP;..\Libraries\CMSIS;..\Libraries\FWlib\inc;..\BSP\LED;..\BSP\USART;..\BSP\DELAY;..\BSP\FLASH;..\BSP\KEY;..\BSP\CAN;..\BSP\ADS1256;..\BSP\G6A;..\APP\GongKong;..\BSP\ReSet</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -450,6 +450,11 @@
               <FileName>flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\FLASH\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>reset.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\ReSet\reset.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -44,6 +44,8 @@ extern u8		CanReceiveCounter; //CAN接收到的字符串个数
 extern u8		CanBuffer[20];
 
 extern u16		MyID;
+extern u8		SFlag;
+
 extern long double VolRate;
 
 /************************************************* 
@@ -189,7 +191,17 @@ void CAN_Config(void)
 	CAN_GPIO_Config();
 	CAN_NVIC_Config();
 	CAN_Mode_Config();
-	CAN_Filter_Config(0x0000, 0x0000, 0x0000);
+
+	if (MyID == 0x0000)
+	{
+		CAN_Filter_Config(0x0000, 0x0000, 0x0000);
+
+	}
+	else 
+	{
+		CAN_Filter_Config(0x0000, 0xFFFF, 0xFFFF);
+
+	}
 
 	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);			//使能CAN1数据接收中断
 }
@@ -214,20 +226,63 @@ void CAN_Send(u32 ExtId, u8 * str, u8 len)
 	TxMessage.ExtId 	= ExtId;					//使用的扩展ID
 	TxMessage.IDE		= CAN_ID_EXT;				//扩展模式
 	TxMessage.RTR		= CAN_RTR_DATA; 			//发送的是数据
-	TxMessage.DLC		= len;						//设定待传输消息的帧长度
 
-	while (*str)
+	if (len < 8)
 	{
-		TxMessage.Data[i++] = *str++;				// 包含待传输数据
+		TxMessage.DLC		= len;					//设定待传输消息的帧长度
+
+		while (*str)
+		{
+			TxMessage.Data[i++] = *str++;			// 包含待传输数据
+		}
+
+		TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
+
+		i					= 0;
+
+		while ((CAN_TransmitStatus(CAN1, TransmitMailbox) != CANTXOK) && (i != 0xFF)) //通过检查CANTXOK位来确认发送是否成功 
+		{
+			i++;
+		}
 	}
-
-	TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
-
-	i					= 0;
-
-	while ((CAN_TransmitStatus(CAN1, TransmitMailbox) != CANTXOK) && (i != 0xFF)) //通过检查CANTXOK位来确认发送是否成功 
+	else 
 	{
-		i++;
+		while (len / 8)
+		{
+			TxMessage.DLC		= 8;				//设定待传输消息的帧长度
+
+			while (*str)
+			{
+				TxMessage.Data[i++] = *str++;		// 包含待传输数据
+			}
+
+			TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
+
+			i					= 0;
+
+			while ((CAN_TransmitStatus(CAN1, TransmitMailbox) != CANTXOK) && (i != 0xFF)) //通过检查CANTXOK位来确认发送是否成功 
+			{
+				i++;
+			}
+
+			len 				= len - 8;
+		}
+
+		TxMessage.DLC		= len;					//设定待传输消息的帧长度
+
+		while (*str)
+		{
+			TxMessage.Data[i++] = *str++;			// 包含待传输数据
+		}
+
+		TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
+
+		i					= 0;
+
+		while ((CAN_TransmitStatus(CAN1, TransmitMailbox) != CANTXOK) && (i != 0xFF)) //通过检查CANTXOK位来确认发送是否成功 
+		{
+			i++;
+		}
 	}
 }
 
@@ -282,7 +337,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		{
 			CanReceiveState 	= 0;				//接收失败
 			CanReceiveCounter	= 0;
-			CAN_Filter_Config(0x0000, 0x0000, 0x0000);
+			CAN_Config();
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 	}
@@ -298,7 +353,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		{
 			CanReceiveState 	= 1;				//接收成功	
 			CanReceiveCounter	= 0;
-			CAN_Filter_Config(0x0000, 0x0000, 0x0000);
+			CAN_Config();
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else if (CanReceiveCounter < CanBuffer[1])
@@ -310,7 +365,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		{
 			CanReceiveState 	= 0;				//接收失败	
 			CanReceiveCounter	= 0;
-			CAN_Filter_Config(0x0000, 0x0000, 0x0000);
+			CAN_Config();
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 	}
@@ -363,7 +418,7 @@ void Can_Work(void)
 					if (MyID == ID_1 || ID_1 == 0xFFFF)
 					{
 						Flash_Write_ID(ID_2);
-						Can_Send_Data(MyID, 0x11, (u8 *) &MyID, 2);
+						Can_Seng_ID(0x07, MyID);
 					}
 
 					break;
@@ -371,9 +426,9 @@ void Can_Work(void)
 				case 0x01: //主机 向从机请求电压数据指令+从机地址
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+						ldVolutage			= Git_Vol_ByAIN(VOL_VIN) *VolRate;
 						p					= (u8 *) &ldVolutage;
-						Can_Send_Data(MyID, 0x04, p, 2);
+						Can_Send_Data(0x04, p, 2);
 						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					}
 
@@ -382,17 +437,11 @@ void Can_Work(void)
 				case 0x02: //主机向从机请求电流数据指令+从机地址 
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						ldVolutage = Git_Vol_ByAIN(VOL_CIN) *VolRate/10;
+						ldVolutage			= Git_Vol_ByAIN(VOL_CIN) *VolRate / 10;
 						p					= (u8 *) &ldVolutage;
-						Can_Send_Data(MyID, 0x05, p, 2);
+						Can_Send_Data(0x05, p, 2);
 					}
 
-					break;
-
-				case 0x03:
-					//				ldVolutage = (long double)data;
-					//				printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-					//				ulResult = data;
 					break;
 
 				case 0x04: //主机接收从机电压数据
@@ -401,6 +450,7 @@ void Can_Work(void)
 					for (i = 0; i < CanBuffer[1] -3; i++)
 					{
 						*p					= CanBuffer[3 + i];
+						USART1_Char(*p);
 						p++;
 					}
 
@@ -413,29 +463,37 @@ void Can_Work(void)
 					for (i = 0; i < CanBuffer[1] -3; i++)
 					{
 						*p					= CanBuffer[3 + i];
+						USART1_Char(*p);
 						p++;
 					}
 
 					printf("The Curr = %Lf mA\r\n", ldVolutage);
 					break;
 
-				case 0x11: //从机向主机发送自己的ID
-					Can_Send_Data(MyID, 0x06, (u8 *) &MyID, 2);
+				case 0x07: //主机接收从机发送请求ID指令
+					USART1_Char(0xAA);
+					USART1_Char(0x05);
+					USART1_Char(0x07);
+					USART1_Char((u8) ID_1);
+					USART1_Char((u8) (ID_1 >> 8));
 					break;
 
-				case 0x15: //主机向从机发送请求ID指令
-					ID_1 = 0x80;
-					ID_1 = ID_1 << 8 | 0x00;
-					CAN_Send(MyID, (u8 *) &ID_1, 2);
+				case 0x15: //主机要求从机发送自己的ID
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						Can_Seng_ID(0x07, MyID);
+					}
+
 					break;
 
 				case 0x20: //负向供电指令 + ID地址
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						G6A_RELAY1(OFF);
-						G6A_RELAY2(OFF);
+						G6A_Vol(OFF);
+						G6A_Cur(OFF);
 						PN_PP_EN(ON);
 						P_D_EN(ON);
+						SFlag				= 2;
 					}
 
 					break;
@@ -445,13 +503,7 @@ void Can_Work(void)
 					{
 						PN_PP_EN(ON);
 						P_D_EN(OFF);
-						Vol_Calibrate_ByADR4525();
-						G6A_RELAY1(ON);
-
-						ldVolutage			= Git_Vol_ByAIN(VOL_VIN) *VolRate;
-						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-
-						G6A_RELAY1(OFF);
+						SFlag				= 1;
 					}
 
 					break;
@@ -459,16 +511,51 @@ void Can_Work(void)
 				case 0x22: //检测（电压表）指令 + ID地址
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						PN_PP_EN(ON);
+						PN_PP_EN(OFF);
 						P_D_EN(OFF);
-						Vol_Calibrate_ByADR4525();
-						G6A_RELAY2(ON);
-
-						ldVolutage			= Git_Vol_ByAIN(VOL_CIN) *VolRate/10;
-						printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-
-						G6A_RELAY2(OFF);
+						SFlag				= 0;
 					}
+
+					break;
+
+				case 0x23: //获取正向供电（电流表）数据指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						if (SFlag == 1)
+						{
+							G6A_Cur(ON);
+							ldVolutage			= Git_Vol_ByAIN(VOL_CIN) *VolRate / 10;
+							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
+							printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+							G6A_Cur(OFF);
+
+						}
+					}
+
+					break;
+
+				case 0x24: //获取检测（电压表）数据指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						if (SFlag == 0)
+						{
+							G6A_Vol(ON);
+							ldVolutage			= Git_Vol_ByAIN(VOL_VIN) *VolRate / 10;
+							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
+							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+							G6A_Vol(OFF);
+
+						}
+					}
+
+					break;
+
+				case 0xFF: //软件复位指令  FF+复位ID
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						SoftReset();
+					}
+
 					break;
 
 				default:

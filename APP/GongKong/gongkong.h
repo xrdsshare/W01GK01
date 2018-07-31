@@ -15,7 +15,8 @@ long Git_Vol_ByAIN(char AIN_n);
 void Get_Elc_ByUSART(void);
 long double Git_Vol(void);
 void Vol_Calibrate_ByADR4525(void);
-void Can_Send_Data(u16 sid, u8 com, u8 * p, u8 len);
+void Can_Send_Data(u8 com, u8 * p, u8 len);
+void Can_Seng_ID(u8 com, u16 SID);
 long double Git_Curr(void);
 
 

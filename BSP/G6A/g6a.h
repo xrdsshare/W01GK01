@@ -4,11 +4,11 @@
 #include "stm32f10x.h"
 #include "app_includes.h"
 
-#define G6A_RELAY1(a)	if (a)	\
+#define G6A_Vol(a)	if (a)	\
 					GPIO_SetBits(RELAY_GPIOx,RELAY1_Pin);\
 					else		\
 					GPIO_ResetBits(RELAY_GPIOx,RELAY1_Pin)
-#define G6A_RELAY2(a)	if (a)	\
+#define G6A_Cur(a)	if (a)	\
 					GPIO_SetBits(RELAY_GPIOx,RELAY2_Pin);\
 					else		\
 					GPIO_ResetBits(RELAY_GPIOx,RELAY2_Pin)

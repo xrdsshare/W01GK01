@@ -34,6 +34,7 @@ extern u8		Usart1ReceiveState; //串口1接收不定长度字符串结束标识符
 extern u8		Usart1ReceiveCounter; //串口1接收到的字符串个数
 
 extern u16		MyID;
+extern u8		SFlag;
 extern long double VolRate;
 
 
@@ -277,9 +278,9 @@ void USART1_Printf(uint8_t * Data, ...)
  调用方法: 
 	1、USART1_Char(0x00);
 *************************************************/
-void USART1_Char(char ch)
+void USART1_Char(u8 ch)
 {
-	USART_SendData(USART1, (unsigned char) ch);
+	USART_SendData(USART1, (u8) ch);
 
 	while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
 		;
@@ -319,6 +320,7 @@ void USART1_Work(void)
 {
 	u8				com;
 	long double 	ldVolutage;
+
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
 	{
 		Usart1ReceiveState	= 0;
@@ -330,7 +332,7 @@ void USART1_Work(void)
 			switch (com)
 			{
 				case 0x00: //设置ID指令+ 修改从机地址+修改后从机地址
-					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					Can_Send_Data(0x00, Usart1Buffer + 3, 4);
 					break;
 
 				case 0x01: //向从机请求电压数据指令+从机地址
@@ -368,16 +370,39 @@ void USART1_Work(void)
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
+				case 0x15: //主机获取从机的ID指令
+					Can_Send_Data(0x15, Usart1Buffer + 3, 2);
+					break;
+
 				case 0x20: //负向供电指令 + ID地址
-					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					Can_Send_Data(0x20, Usart1Buffer + 3, 2);
+					SFlag				= 2;
 					break;
 
 				case 0x21: //正向供电功能（电流表）指令 + ID地址
-					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					Can_Send_Data(0x21, Usart1Buffer + 3, 2);
+					SFlag				= 1;
 					break;
 
 				case 0x22: //检测（电压表）指令 + ID地址
-					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					Can_Send_Data(0x22, Usart1Buffer + 3, 2);
+					SFlag				= 0;
+					break;
+
+				case 0x23: //获取正向供电（电流表）数据指令 + ID地址
+					Can_Send_Data(0x23, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x24: //获取检测（电压表）数据指令 + ID地址
+					Can_Send_Data(0x24, Usart1Buffer + 3, 2);
+					break;
+
+				case 0xEE: //调试使用软件复位指令
+					SoftReset();
+					break;
+
+				case 0xFF: //软件复位指令
+					Can_Send_Data(0xFF, Usart1Buffer + 3, 2);
 					break;
 
 				default:

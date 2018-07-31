@@ -22,8 +22,8 @@ void G6A_Init(void)
 
 void G6A_Test(void)
 {
-	G6A_RELAY1(ON);
-	G6A_RELAY2(ON);
+	G6A_Vol(ON);
+	G6A_Cur(ON);
 	PN_PP_EN(ON);
 	P_D_EN(ON);
 }

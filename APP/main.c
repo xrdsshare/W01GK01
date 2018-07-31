@@ -20,6 +20,7 @@ volatile u8 	CanBuffer[20] =
 
 
 volatile u16	MyID = 0x8000; //本机发送ID
+volatile u8 	SFlag = 0; //设备状态标志符， 0x00-电压检测状态、0x01-正向供电状态（电流表状态）、0x02-负向供电状态
 short			Electric_data; //电流数据
 volatile long double VolRate = 0.59604644775390625; //0.59604644775390625
 volatile long	VolAGND = 0.0;
@@ -31,6 +32,12 @@ u8				Flash_Data[2];
 int main(void)
 {
 	long double 	vol_ADR4515, VolAGND;
+	long			temp1, temp2;
+	long double 	ldVolutage;
+	u8 *			p;
+
+	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
+	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
 
 	LED_Init(); 									//LED 端口初始化 
 
@@ -49,20 +56,24 @@ int main(void)
 	//	Vol_Calibrate_ByADR4525();						//	电压自校准
 	printf("==============测试程序开始！==============\n");
 
-	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
-	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
 	printf("My ID is %X\n", MyID);
 
-	CAN_Send(MyID, (u8 *) &MyID, 2);
+	Can_Seng_ID(0x07, MyID);
 
-	VolAGND 			= Git_Vol_ByAIN(VOL_AGND) *VolRate;
-	printf("VolAGND = %LfuV, %LfmV, %LfV\r\n", VolAGND, VolAGND / 1000, VolAGND / 1000000);
+	temp1				= Git_Vol_ByAIN(VOL_AGND);
+	VolAGND 			= temp1 * VolRate;
+	printf("LongAGND = %d, VolAGND = %LfuV, %LfmV, %LfV\r\n", temp1, VolAGND, VolAGND / 1000, VolAGND / 1000000);
 
-	vol_ADR4515 		= Git_Vol_ByAIN(VOL_ADR) *VolRate;
-	printf("ADR4515 = %LfuV, %LfmV, %LfV\r\n", vol_ADR4515, vol_ADR4515 / 1000, vol_ADR4515 / 1000000);
+	temp2				= Git_Vol_ByAIN(VOL_ADR);
+	vol_ADR4515 		= temp2 * VolRate;
+	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000,
+		 vol_ADR4515 / 1000000);
 
 	Vol_Calibrate_ByADR4525();
 
+	ldVolutage = 2500000;
+	p = (u8 *) &ldVolutage;
+	Can_Send_Data(0xBB, (u8 *) &ldVolutage, 8);
 	//	FLASH_Write_Test(0X0800FC00, 0x1234);
 	while (1)
 	{
