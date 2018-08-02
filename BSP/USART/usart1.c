@@ -356,12 +356,12 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
-					ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+					ldVolutage = Git_Vol_ByAIN(VOL_VIN0) *VolRate;
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
 				case 0x13: //读取本机电流数据指令
-					ldVolutage = Git_Vol_ByAIN(VOL_VIN) *VolRate;
+					ldVolutage = Git_Vol_ByAIN(VOL_VIN0) *VolRate;
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 

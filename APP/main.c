@@ -33,8 +33,9 @@ int main(void)
 {
 	long double 	vol_ADR4515, VolAGND;
 	long			temp1, temp2;
-	long double 	ldVolutage;
-	u8 *			p;
+//	long double 	ldVolutage;
+//	u8 *			p;
+//	u8				i;
 
 	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
 	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
@@ -66,15 +67,14 @@ int main(void)
 
 	temp2				= Git_Vol_ByAIN(VOL_ADR);
 	vol_ADR4515 		= temp2 * VolRate;
-	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000,
-		 vol_ADR4515 / 1000000);
+	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000, 
+		vol_ADR4515 / 1000000);
 
-	Vol_Calibrate_ByADR4525();
+//	Vol_Git();
 
-	ldVolutage = 2500000;
-	p = (u8 *) &ldVolutage;
-	Can_Send_Data(0xBB, (u8 *) &ldVolutage, 8);
-	//	FLASH_Write_Test(0X0800FC00, 0x1234);
+	vol_ADR4515 		= Git_Vol_ByAIN(VOL_VIN1) * VolRate;
+	printf("Vol = %LfuV, %LfmV, %LfV\r\n", vol_ADR4515, vol_ADR4515 / 1000, vol_ADR4515 / 1000000);
+	
 	while (1)
 	{
 		//		LED0_Test();

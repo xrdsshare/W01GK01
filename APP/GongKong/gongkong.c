@@ -103,7 +103,7 @@ long Git_Vol_ByAIN(char AIN_n)
 //can发送电压数据
 void Send_Vol_Long(void)
 {
-	long			ulResult = Git_Vol_ByAIN(VOL_VIN);
+	long			ulResult = Git_Vol_ByAIN(VOL_VIN0);
 
 	//	char *q = (char*)&ldVolutage;
 	//	CAN_Send(MyID, q, 8);
@@ -132,54 +132,54 @@ void Get_Elc_ByUSART(void)
 	Return:	 
 	Others:	 
 *************************************************/
-long double Git_Vol(void)
+//long double Git_Vol(void)
+//{
+//	long double 	vol_Data;
+//	long			vol_long;
+//	//	Vol_Calibrate_ByADR4525();						//每次测量前进行一次自校准
+//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
+//	G6A_Vol(ON);
+//	Delay_ms(100);
+//	Git_Vol_ByAIN(VOL_VIN0);
+//	Git_Vol_ByAIN(VOL_VIN0);
+//	vol_long			= Git_Vol_ByAIN(VOL_VIN0);
+//	vol_Data			= vol_long * VolRate;
+//	printf("Vol long:%d\n", vol_long);
+//	G6A_Vol(OFF);
+//	return vol_Data;
+//}
+void Vol_Git(void)
 {
-	long double 	vol_Data;
-	long			vol_long;
+	long double			l_V25, l_Vm;
 
-	//	Vol_Calibrate_ByADR4525();						//每次测量前进行一次自校准
-	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
+	u8				i, n;
+
+	n					= 10;
+
+	l_V25				= 0;
+	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第一次不准确的值	
+	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第二次不准确的值
+
+
+	l_V25				= Git_Vol_ByAIN(VOL_VIN0)*0.596031526729987;
+	printf("The Vol = %Lf mV\r\n", l_V25 / 1000000);
 
 	G6A_Vol(ON);
-	Delay_ms(100);
+	Delay_us(100);
+	l_Vm				= 0;
+	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第一次不准确的值	
+	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第二次不准确的值
 
-	Git_Vol_ByAIN(VOL_VIN);
-	Git_Vol_ByAIN(VOL_VIN);
-	vol_long			= Git_Vol_ByAIN(VOL_VIN);
-	vol_Data			= vol_long * VolRate;
+	for (i = 0; i < n; ++i)
+	{
+		l_Vm				= l_Vm + Git_Vol_ByAIN(VOL_VIN0);
+	}
 
-	printf("Vol long:%d\n", vol_long);
+	l_Vm				= l_Vm / n;
+
 	G6A_Vol(OFF);
-	return vol_Data;
-}
 
-
-/************************************************* 
-	Function:	Vol_Calibrate_ByADR4525
-	Description:	电压表自校准函数
-	Input:	1.
-	Return:	 
-	Others:	 
-*************************************************/
-void Vol_Calibrate_ByADR4525(void)
-{
-	//	long double 	vol_Data;
-	//	long			vol_long;
-	//	Git_Vol_ByAIN(VOL_AGND);						//扔掉第一次不准确的值
-	//	Git_Vol_ByAIN(VOL_AGND);
-	//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND);
-	//	printf("VolAGND long:%X\n", VolAGND);
-	//	Git_Vol_ByAIN(VOL_VIN);							//扔掉第一次不准确的值
-	//	Git_Vol_ByAIN(VOL_VIN);
-	//	vol_long			= Git_Vol_ByAIN(VOL_VIN);
-	//	printf("vol_long long:%X\n", vol_long);
-	//	VolRate 			= (2.5 * 1000000) / (vol_long - VolAGND);
-	//	vol_Data			= VolRate * (vol_long - VolAGND);
-	//	printf("\r\n*******************************************************\r\n");
-	//	printf("\r\nThe V_2.5 = %Lf V\r\n", vol_Data / 1000000);
-	//	printf("The V_AGND = %Lf V\r\n", VolAGND * VolRate / 1000000);
-	//	printf("The VolRate = %Lf V\r\n", VolRate);
-	//	printf("\r\n*******************************************************\r\n");
+//	printf("\nl_V25 = %d, l_Vm = %d\n", l_V25, l_Vm);
 }
 
 
@@ -246,9 +246,9 @@ long double Git_Curr(void)
 	G6A_RELAY1_CMD(ON);
 	Delay(0x5555);
 
-	Git_Vol_ByAIN(VOL_VIN);
-	Git_Vol_ByAIN(VOL_VIN);
-	vol_long			= Git_Vol_ByAIN(VOL_VIN);
+	Git_Vol_ByAIN(VOL_VIN0);
+	Git_Vol_ByAIN(VOL_VIN0);
+	vol_long			= Git_Vol_ByAIN(VOL_VIN0);
 	vol_Data			= vol_long * VolRate;
 	G6A_RELAY1_CMD(OFF);
 	G6A_RELAY2_CMD(OFF);
