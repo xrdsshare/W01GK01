@@ -343,8 +343,13 @@ void USART1_Work(void)
 					CAN_Send(MyID, Usart1Buffer + 3, 2);
 					break;
 
-				case 0x03: //向从机请求电压电流数据指令+从机地址
+				case 0x03://向从机请求电压电流数据指令+从机地址
 					CAN_Send(MyID, Usart1Buffer + 3, 2);
+					break;
+				
+
+				case 0x04:  //读取调试信息		
+					GK_Test();
 					break;
 
 				case 0x11: //修改本机地址+修改后ID
@@ -356,8 +361,7 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
-					ldVolutage = Git_Vol_ByAIN(VOL_VIN0) *VolRate;
-					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					Vol_Git();
 					break;
 
 				case 0x13: //读取本机电流数据指令
@@ -376,17 +380,17 @@ void USART1_Work(void)
 
 				case 0x20: //负向供电指令 + ID地址
 					Can_Send_Data(0x20, Usart1Buffer + 3, 2);
-					SFlag				= 2;
+					SFlag = 2;
 					break;
 
 				case 0x21: //正向供电功能（电流表）指令 + ID地址
 					Can_Send_Data(0x21, Usart1Buffer + 3, 2);
-					SFlag				= 1;
+					SFlag = 1;
 					break;
 
 				case 0x22: //检测（电压表）指令 + ID地址
 					Can_Send_Data(0x22, Usart1Buffer + 3, 2);
-					SFlag				= 0;
+					SFlag = 0;
 					break;
 
 				case 0x23: //获取正向供电（电流表）数据指令 + ID地址

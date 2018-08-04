@@ -252,7 +252,7 @@ void CAN_Send(u32 ExtId, u8 * str, u8 len)
 
 		for (i = 0; i < 8; i++)
 		{
-			TxMessage.Data[i] = *str++; 		// 包含待传输数据
+			TxMessage.Data[i]	= *str++;			// 包含待传输数据
 		}
 
 		TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
@@ -449,7 +449,8 @@ void Can_Work(void)
 						ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate;
 						p					= (u8 *) &ldVolutage;
 						Can_Send_Data(0x04, p, 2);
-						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+						//						printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					}
 
 					break;
@@ -470,11 +471,11 @@ void Can_Work(void)
 					for (i = 0; i < CanBuffer[1] -3; i++)
 					{
 						*p					= CanBuffer[3 + i];
-//						USART1_Char(*p);
+						USART1_Char(*p);
 						p++;
 					}
 
-					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
 				case 0x05: //主机接收从机电流数据
@@ -487,7 +488,7 @@ void Can_Work(void)
 						p++;
 					}
 
-					printf("The Curr = %Lf mA\r\n", ldVolutage);
+					//					printf("The Curr = %Lf mA\r\n", ldVolutage);
 					break;
 
 				case 0x07: //主机接收从机发送请求ID指令
@@ -547,6 +548,7 @@ void Can_Work(void)
 							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
 							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
 							G6A_Cur(OFF);
 
 						}

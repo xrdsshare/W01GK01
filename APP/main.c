@@ -31,13 +31,17 @@ u8				Flash_Data[2];
 
 int main(void)
 {
-	long double 	vol_ADR4515, VolAGND;
-	long			temp1, temp2;
-//	long double 	ldVolutage;
-//	u8 *			p;
-//	u8				i;
+//	long double 	VolAGND;
+//	long			temp1, temp2;
+
+	//	long double 	ldVolutage;
+	//	u8 *			p;
+	//	u8				i;
+//	long double 	vol;
+
 
 	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
+
 	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
 
 	LED_Init(); 									//LED ¶Ë¿Ú³õÊ¼»¯ 
@@ -61,20 +65,21 @@ int main(void)
 
 	Can_Seng_ID(0x07, MyID);
 
-	temp1				= Git_Vol_ByAIN(VOL_AGND);
-	VolAGND 			= temp1 * VolRate;
-	printf("LongAGND = %d, VolAGND = %LfuV, %LfmV, %LfV\r\n", temp1, VolAGND, VolAGND / 1000, VolAGND / 1000000);
+//	temp1				= Git_Vol_ByAIN(VOL_AGND);
+//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND) * VolRate;
 
-	temp2				= Git_Vol_ByAIN(VOL_ADR);
-	vol_ADR4515 		= temp2 * VolRate;
-	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000, 
-		vol_ADR4515 / 1000000);
-
+//	printf("VolAGND = %LfuV, %LfmV, %LfV\r\n", VolAGND, VolAGND / 1000, VolAGND / 1000000);
+	//	temp2				= Git_Vol_ByAIN(VOL_ADR);
+	//	vol_ADR4515 		= temp2 * VolRate;
+	//	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000, 
+	//		vol_ADR4515 / 1000000);
+//	printf("Vol = %LfuV, %LfmV, %LfV\r\n", vol, vol / 1000, vol / 1000000);
 //	Vol_Git();
+	GK_Test();
 
-	vol_ADR4515 		= Git_Vol_ByAIN(VOL_VIN1) * VolRate;
-	printf("Vol = %LfuV, %LfmV, %LfV\r\n", vol_ADR4515, vol_ADR4515 / 1000, vol_ADR4515 / 1000000);
-	
+	LED0(ON);
+
+
 	while (1)
 	{
 		//		LED0_Test();

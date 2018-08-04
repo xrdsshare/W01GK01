@@ -150,36 +150,15 @@ void Get_Elc_ByUSART(void)
 //}
 void Vol_Git(void)
 {
-	long double			l_V25, l_Vm;
-
-	u8				i, n;
-
-	n					= 10;
-
-	l_V25				= 0;
-	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第一次不准确的值	
-	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第二次不准确的值
-
-
-	l_V25				= Git_Vol_ByAIN(VOL_VIN0)*0.596031526729987;
-	printf("The Vol = %Lf mV\r\n", l_V25 / 1000000);
+	long double 	ldVolutage;
 
 	G6A_Vol(ON);
-	Delay_us(100);
-	l_Vm				= 0;
-	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第一次不准确的值	
-	Git_Vol_ByAIN(VOL_VIN0); 						//扔掉第二次不准确的值
+	Delay_us(1000);
 
-	for (i = 0; i < n; ++i)
-	{
-		l_Vm				= l_Vm + Git_Vol_ByAIN(VOL_VIN0);
-	}
-
-	l_Vm				= l_Vm / n;
-
-	G6A_Vol(OFF);
-
-//	printf("\nl_V25 = %d, l_Vm = %d\n", l_V25, l_Vm);
+	ldVolutage			= Git_Vol_ByAIN(VOL_VIN1) *VolRate;
+	printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+	ldVolutage			= Git_Vol_ByAIN(VOL_AGND) *VolRate;
+	printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 }
 
 
@@ -206,6 +185,30 @@ void Can_Send_Data(u8 com, u8 * p, u8 len)
 	}
 
 	CAN_Send(MyID, temp, temp[1]);
+}
+
+
+void GK_Test(void)
+{
+	long			V_M, V_250, V_251, V_AGND;
+	long double 	DV_b;
+
+	//	long double 	DV_M, DV_250, DV_251, DV_AGND, DV_b;
+	V_AGND				= Git_Vol_ByAIN(VOL_AGND);
+	V_250				= Git_Vol_ByAIN(VOL_ADR);
+
+	//	V_251				= (Git_Vol_ByAIN(VOL_VIN2) / 10);
+	//	G6A_Vol(ON);
+	//	Delay_ms(500);
+	DV_b				=
+		 (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0) + (Git_Vol_ByAIN(VOL_CIN0) / 10.0);
+
+	//	Delay_ms(500);
+	//	G6A_Vol(OFF);
+	//	DV_b = 2.5 - V_251 * VolRate; 
+	printf("%d, %d, %d, %d\r\n", V_AGND, V_250, V_251, V_M);
+	printf("%LfV, %LfV, %LfV, %LfV\r\n", V_AGND * VolRate / 1000000, V_250 * VolRate / 1000000, 
+		DV_b * VolRate * 10.09 / 1000000, V_M * VolRate * 10.09 / 1000000);
 }
 
 
