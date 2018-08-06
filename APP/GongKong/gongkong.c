@@ -198,6 +198,7 @@ void GK_Test(void)
 	V_250				= Git_Vol_ByAIN(VOL_ADR);
 
 	V_251				= (Git_Vol_ByAIN(VOL_VIN2) / 10);
+
 	//	G6A_Vol(ON);
 	//	Delay_ms(500);
 	DV_b				=
@@ -229,6 +230,23 @@ void Can_Seng_ID(u8 com, u16 SID)
 	Temp				= SID;
 	Temp				= Temp << 8 | SID >> 8;
 	Can_Send_Data(com, (u8 *) &Temp, 2);
+}
+
+
+void Can_Seng_VC(u8 com, u16 SID, u8 * p)
+{
+	u8				temp[20];
+	u8				i;
+
+	temp[0] 			= SID >> 8;
+	temp[1] 			= SID;
+
+	for (i = 0; i < 8; ++i)
+	{
+		temp[i + 2] 		= * (p + i);
+	}
+
+	Can_Send_Data(com, temp, 0x0A);
 }
 
 

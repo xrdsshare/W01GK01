@@ -304,7 +304,8 @@ void USART1_IRQHandler(void)
 	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{
 		Usart1Buffer[Usart1ReceiveCounter++] = USART_ReceiveData(USART1);
-//		USART1_Char(USART_ReceiveData(USART1));
+
+		//		USART1_Char(USART_ReceiveData(USART1));
 	}
 	else if (USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)
 	{
@@ -312,6 +313,9 @@ void USART1_IRQHandler(void)
 		usart1Clear 		= USART1->DR;			//读取DR寄存器（想读取SR，在读取DR，是为了清除IDLE中断）
 
 		Usart1ReceiveState	= 1;
+
+		USART1_Work();
+//		Can_Work();
 	}
 
 }
@@ -322,8 +326,11 @@ void USART1_Work(void)
 	u8				com, i;
 	long double 	ldVolutage;
 
+
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
 	{
+		NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);		//失能CAN1消息接收中断
+		USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); //使能接收中断
 
 		if (Usart1Buffer[0] == 0xAA)
 		{
@@ -413,11 +420,15 @@ void USART1_Work(void)
 
 		for (i = 0; i < 20; ++i)
 		{
-			Usart1Buffer[i] = 0x00;
+			Usart1Buffer[i] 	= 0x00;
 		}
+
 		Usart1ReceiveState	= 0;
 		Usart1ReceiveCounter = 0;
+		USART_ITConfig(USART1, USART_IT_RXNE, ENABLE); //使能接收中断
+		NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);		//使能CAN1数据接收中断
 	}
+
 }
 
 

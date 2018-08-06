@@ -80,8 +80,8 @@ int main(void)
 		//´®¿Ú²âÊÔº¯Êý
 		//		USART1_Test();
 		//		Can_Text();
-		USART1_Work();
-		Can_Work();
+//		USART1_Work();
+//		Can_Work();
 	};
 }
 

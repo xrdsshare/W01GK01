@@ -391,6 +391,9 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 	}
+
+//	USART1_Work();
+	Can_Work();
 }
 
 
@@ -428,6 +431,9 @@ void Can_Work(void)
 
 	if (CanReceiveState == 1)
 	{
+		USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); //失能接收中断
+		NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);		//失能CAN1消息接收中断
+
 		if (CanBuffer[0] == 0x50 || CanBuffer[0] == 0x55)
 		{
 			CAN_data_com		= CanBuffer[2];
@@ -514,7 +520,7 @@ void Can_Work(void)
 						P_D_EN(ON);
 						Can_Seng_ID(0x07, MyID);
 						SFlag				= 2;
-						
+
 					}
 
 					break;
@@ -534,7 +540,7 @@ void Can_Work(void)
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
 						PN_PP_EN(OFF);
-						P_D_EN(OFF);						
+						P_D_EN(OFF);
 						Can_Seng_ID(0x07, MyID);
 						SFlag				= 0;
 					}
@@ -548,7 +554,9 @@ void Can_Work(void)
 						{
 							G6A_Cur(ON);
 							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
-							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
+
+							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
+							Can_Seng_VC(0x05, MyID, (u8 *) &ldVolutage);
 							printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 
 							G6A_Cur(OFF);
@@ -565,7 +573,9 @@ void Can_Work(void)
 						{
 							G6A_Vol(ON);
 							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate / 10;
-							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
+
+							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
+							Can_Seng_VC(0x04, MyID, (u8 *) &ldVolutage);
 							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 							G6A_Vol(OFF);
 
@@ -589,8 +599,9 @@ void Can_Work(void)
 
 		CanReceiveState 	= 0;
 		NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);		//使能CAN1数据接收中断
-	}
+		USART_ITConfig(USART1, USART_IT_RXNE, ENABLE); //使能接收中断
 
+	}
 
 }
 
