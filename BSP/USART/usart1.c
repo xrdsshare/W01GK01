@@ -304,6 +304,7 @@ void USART1_IRQHandler(void)
 	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{
 		Usart1Buffer[Usart1ReceiveCounter++] = USART_ReceiveData(USART1);
+//		USART1_Char(USART_ReceiveData(USART1));
 	}
 	else if (USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)
 	{
@@ -318,12 +319,11 @@ void USART1_IRQHandler(void)
 
 void USART1_Work(void)
 {
-	u8				com;
+	u8				com, i;
 	long double 	ldVolutage;
 
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
 	{
-		Usart1ReceiveState	= 0;
 
 		if (Usart1Buffer[0] == 0xAA)
 		{
@@ -343,21 +343,18 @@ void USART1_Work(void)
 					CAN_Send(MyID, Usart1Buffer + 3, 2);
 					break;
 
-				case 0x03://向从机请求电压电流数据指令+从机地址
+				case 0x03: //向从机请求电压电流数据指令+从机地址
 					CAN_Send(MyID, Usart1Buffer + 3, 2);
 					break;
-				
 
-				case 0x04:  //读取调试信息		
+				case 0x04: //读取调试信息		
 					GK_Test();
 					break;
 
 				case 0x11: //修改本机地址+修改后ID
 					MyID = Usart1Buffer[3] << 8 | Usart1Buffer[4];
 					Flash_Write_ID(MyID);
-					USART1_Char(0x30);
-					USART1_Char(0x31);
-					USART1_Char(0x32);
+					USART_Seng_ID(MyID);
 					break;
 
 				case 0x12: //读取本机电压数据指令
@@ -414,6 +411,11 @@ void USART1_Work(void)
 			}
 		}
 
+		for (i = 0; i < 20; ++i)
+		{
+			Usart1Buffer[i] = 0x00;
+		}
+		Usart1ReceiveState	= 0;
 		Usart1ReceiveCounter = 0;
 	}
 }

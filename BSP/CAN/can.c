@@ -338,7 +338,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 			CanReceiveState 	= 1;				//接收成功	
 			CanReceiveCounter	= 0;
-			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
+
+			//			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else if (RxMessage.Data[0] == 0x55)
 		{
@@ -374,7 +375,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 			CanReceiveState 	= 1;				//接收成功	
 			CanReceiveCounter	= 0;
 			CAN_Config();
-			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
+
+			//			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else if (CanReceiveCounter < CanBuffer[1])
 		{
@@ -492,11 +494,7 @@ void Can_Work(void)
 					break;
 
 				case 0x07: //主机接收从机发送请求ID指令
-					USART1_Char(0xAA);
-					USART1_Char(0x05);
-					USART1_Char(0x07);
-					USART1_Char((u8) ID_1);
-					USART1_Char((u8) (ID_1 >> 8));
+					USART_Seng_ID(ID_1);
 					break;
 
 				case 0x15: //主机要求从机发送自己的ID
@@ -514,7 +512,9 @@ void Can_Work(void)
 						G6A_Cur(OFF);
 						PN_PP_EN(ON);
 						P_D_EN(ON);
+						Can_Seng_ID(0x07, MyID);
 						SFlag				= 2;
+						
 					}
 
 					break;
@@ -524,6 +524,7 @@ void Can_Work(void)
 					{
 						PN_PP_EN(ON);
 						P_D_EN(OFF);
+						Can_Seng_ID(0x07, MyID);
 						SFlag				= 1;
 					}
 
@@ -533,7 +534,8 @@ void Can_Work(void)
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
 						PN_PP_EN(OFF);
-						P_D_EN(OFF);
+						P_D_EN(OFF);						
+						Can_Seng_ID(0x07, MyID);
 						SFlag				= 0;
 					}
 
@@ -586,6 +588,7 @@ void Can_Work(void)
 		}
 
 		CanReceiveState 	= 0;
+		NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);		//使能CAN1数据接收中断
 	}
 
 

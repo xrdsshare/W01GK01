@@ -197,7 +197,7 @@ void GK_Test(void)
 	V_AGND				= Git_Vol_ByAIN(VOL_AGND);
 	V_250				= Git_Vol_ByAIN(VOL_ADR);
 
-	//	V_251				= (Git_Vol_ByAIN(VOL_VIN2) / 10);
+	V_251				= (Git_Vol_ByAIN(VOL_VIN2) / 10);
 	//	G6A_Vol(ON);
 	//	Delay_ms(500);
 	DV_b				=
@@ -207,8 +207,8 @@ void GK_Test(void)
 	//	G6A_Vol(OFF);
 	//	DV_b = 2.5 - V_251 * VolRate; 
 	printf("%d, %d, %d, %d\r\n", V_AGND, V_250, V_251, V_M);
-	printf("%LfV, %LfV, %LfV, %LfV\r\n", V_AGND * VolRate / 1000000, V_250 * VolRate / 1000000, 
-		DV_b * VolRate * 10.09 / 1000000, V_M * VolRate * 10.09 / 1000000);
+	printf("%LfV, %LfV, %LfmV, %LfmV\r\n", V_AGND * VolRate / 1000000, V_250 * VolRate / 1000000, 
+		DV_b * VolRate / 1000, V_251 * VolRate / 1000);
 }
 
 
@@ -229,6 +229,16 @@ void Can_Seng_ID(u8 com, u16 SID)
 	Temp				= SID;
 	Temp				= Temp << 8 | SID >> 8;
 	Can_Send_Data(com, (u8 *) &Temp, 2);
+}
+
+
+void USART_Seng_ID(u16 SID)
+{
+	USART1_Char(0xAA);
+	USART1_Char(0x05);
+	USART1_Char(0x07);
+	USART1_Char((u8) (SID >> 8));
+	USART1_Char((u8) SID);
 }
 
 

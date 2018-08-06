@@ -48,6 +48,7 @@ int main(void)
 
 	//	Key_Init(); 									//按键初始化
 	USART1_Config(115200);
+	USART_Seng_ID(MyID);
 
 	/* 配置CAN模块 */
 	CAN_Config();
@@ -59,24 +60,16 @@ int main(void)
 	G6A_Init();
 
 	//	Vol_Calibrate_ByADR4525();						//	电压自校准
-	printf("==============测试程序开始！==============\n");
+//	printf("==============测试程序开始！==============\n");
 
-	printf("My ID is %X\n", MyID);
+//	printf("My ID is %X\n", MyID);
 
 	Can_Seng_ID(0x07, MyID);
 
-//	temp1				= Git_Vol_ByAIN(VOL_AGND);
-//	VolAGND 			= Git_Vol_ByAIN(VOL_AGND) * VolRate;
-
-//	printf("VolAGND = %LfuV, %LfmV, %LfV\r\n", VolAGND, VolAGND / 1000, VolAGND / 1000000);
-	//	temp2				= Git_Vol_ByAIN(VOL_ADR);
-	//	vol_ADR4515 		= temp2 * VolRate;
-	//	printf("LongADR4515 = %d, ADR4515 = %LfuV, %LfmV, %LfV\r\n", temp2, vol_ADR4515, vol_ADR4515 / 1000, 
-	//		vol_ADR4515 / 1000000);
-//	printf("Vol = %LfuV, %LfmV, %LfV\r\n", vol, vol / 1000, vol / 1000000);
 //	Vol_Git();
-	GK_Test();
-
+//	GK_Test();
+	
+	
 	LED0(ON);
 
 
