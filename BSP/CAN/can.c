@@ -130,7 +130,7 @@ static void CAN_Mode_Config(void)
 	CAN_InitStructure.CAN_TTCM = DISABLE;			//MCR-TTCM	关闭时间触发通信模式使能
 	CAN_InitStructure.CAN_ABOM = ENABLE;			//MCR-ABOM	自动离线管理
 	CAN_InitStructure.CAN_AWUM = ENABLE;			//MCR-AWUM	使用自动唤醒模式
-	CAN_InitStructure.CAN_NART = DISABLE;			//MCR-NART	禁止报文自动重传	  DISABLE-自动重传
+	CAN_InitStructure.CAN_NART = ENABLE;			//MCR-NART	禁止报文自动重传	  DISABLE-自动重传
 	CAN_InitStructure.CAN_RFLM = DISABLE;			//MCR-RFLM	接收FIFO 锁定模式  DISABLE-溢出时新报文会覆盖原有报文
 	CAN_InitStructure.CAN_TXFP = DISABLE;			//MCR-TXFP	发送FIFO优先级 DISABLE-优先级取决于报文标示符
 	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;	//正常工作模式
@@ -232,9 +232,9 @@ void CAN_Send(u32 ExtId, u8 * str, u8 len)
 	{
 		TxMessage.DLC		= len;					//设定待传输消息的帧长度
 
-		while (*str)
+		for (i = 0; i < len; i++)
 		{
-			TxMessage.Data[i++] = *str++;			// 包含待传输数据
+			TxMessage.Data[i]	= *str++;			// 包含待传输数据
 		}
 
 		TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
@@ -392,7 +392,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		}
 	}
 
-//	USART1_Work();
+	//	USART1_Work();
 	Can_Work();
 }
 

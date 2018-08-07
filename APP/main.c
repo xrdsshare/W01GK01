@@ -27,6 +27,10 @@ volatile long	VolAGND = 0.0;
 
 u8				Flash_Data[2];
 
+volatile u16	ID1_Data = 0x0000;
+volatile u16	ID2_Data = 0x0000;
+volatile long double Vol_Data = 0.0;
+
 
 
 int main(void)

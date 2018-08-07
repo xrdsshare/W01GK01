@@ -179,7 +179,7 @@ void Can_Send_Data(u8 com, u8 * p, u8 len)
 	temp[1] 			= len + 3;
 	temp[2] 			= com;
 
-	for (i = 0; i < len; ++i)
+	for (i = 0; i < len; i++)
 	{
 		temp[i + 3] 		= * (p + i);
 	}

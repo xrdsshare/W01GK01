@@ -37,6 +37,11 @@ extern u16		MyID;
 extern u8		SFlag;
 extern long double VolRate;
 
+extern u16	ID1_Data;
+extern u16	ID2_Data;
+extern long double Vol_Data;
+
+
 
 /************************************************* 
  函数: USART1_Config
@@ -300,9 +305,18 @@ void USART1_Char(u8 ch)
 void USART1_IRQHandler(void)
 {
 	u8				usart1Clear = usart1Clear;		//定义该变量用于去除编辑器，未使用变量警告
+	u8				i;
 
 	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{
+		if (Usart1ReceiveCounter == 0)
+		{
+			for (i = 0; i < 20; i++)
+			{
+				Usart1Buffer[i] 	= 0x00;
+			}
+		}
+
 		Usart1Buffer[Usart1ReceiveCounter++] = USART_ReceiveData(USART1);
 
 		//		USART1_Char(USART_ReceiveData(USART1));
@@ -314,8 +328,15 @@ void USART1_IRQHandler(void)
 
 		Usart1ReceiveState	= 1;
 
+//		for (i = 0; i < 20; i++)
+//		{
+//			USART1_Char(Usart1Buffer[i]);
+//		}
+		
+
 		USART1_Work();
-//		Can_Work();
+
+		//		Can_Work();
 	}
 
 }
@@ -323,7 +344,7 @@ void USART1_IRQHandler(void)
 
 void USART1_Work(void)
 {
-	u8				com, i;
+	u8				com;
 	long double 	ldVolutage;
 
 
@@ -418,10 +439,7 @@ void USART1_Work(void)
 			}
 		}
 
-		for (i = 0; i < 20; ++i)
-		{
-			Usart1Buffer[i] 	= 0x00;
-		}
+
 
 		Usart1ReceiveState	= 0;
 		Usart1ReceiveCounter = 0;

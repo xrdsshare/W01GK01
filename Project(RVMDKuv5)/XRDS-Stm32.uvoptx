@@ -119,10 +119,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -151,18 +147,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>335</LineNumber>
+          <LineNumber>187</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134226884</Address>
+          <Address>134221808</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\BSP\USART\usart1.c</Filename>
+          <Filename>..\APP\GongKong\gongkong.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\XRDS_Stm32\../BSP/USART/usart1.c\335</Expression>
+          <Expression>\\XRDS_Stm32\../APP/GongKong/gongkong.c\187</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
@@ -191,6 +187,11 @@
           <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>temp</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Usart1Buffer</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
