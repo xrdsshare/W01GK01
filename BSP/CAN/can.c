@@ -499,6 +499,30 @@ void Can_Work(void)
 					USART_Seng_ID(ID_1);
 					break;
 
+				case 0x08: //（正向供电设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+					USART1_Char(0xAA);
+					USART1_Char(0x05);
+					USART1_Char(0x08);
+					USART1_Char((u8) (ID_1 >> 8));
+					USART1_Char((u8) ID_1);
+					break;
+
+				case 0x09: //（负向供电设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+					USART1_Char(0xAA);
+					USART1_Char(0x05);
+					USART1_Char(0x09);
+					USART1_Char((u8) (ID_1 >> 8));
+					USART1_Char((u8) ID_1);
+					break;
+
+				case 0x0A: //（检测设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+					USART1_Char(0xAA);
+					USART1_Char(0x05);
+					USART1_Char(0x0A);
+					USART1_Char((u8) (ID_1 >> 8));
+					USART1_Char((u8) ID_1);
+					break;
+
 				case 0x15: //主机要求从机发送自己的ID
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
@@ -514,7 +538,7 @@ void Can_Work(void)
 						G6A_Cur(OFF);
 						PN_PP_EN(ON);
 						P_D_EN(ON);
-						Can_Seng_ID(0x07, MyID);
+						Can_Seng_ID(0x09, MyID);
 						SFlag				= 2;
 
 					}
@@ -526,7 +550,7 @@ void Can_Work(void)
 					{
 						PN_PP_EN(ON);
 						P_D_EN(OFF);
-						Can_Seng_ID(0x07, MyID);
+						Can_Seng_ID(0x08, MyID);
 						SFlag				= 1;
 					}
 
@@ -537,7 +561,7 @@ void Can_Work(void)
 					{
 						PN_PP_EN(OFF);
 						P_D_EN(OFF);
-						Can_Seng_ID(0x07, MyID);
+						Can_Seng_ID(0x0A, MyID);
 						SFlag				= 0;
 					}
 
