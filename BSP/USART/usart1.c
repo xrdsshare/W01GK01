@@ -37,10 +37,6 @@ extern u16		MyID;
 extern u8		SFlag;
 extern long double VolRate;
 
-extern u16	ID1_Data;
-extern u16	ID2_Data;
-extern long double Vol_Data;
-
 
 
 /************************************************* 
@@ -327,11 +323,6 @@ void USART1_IRQHandler(void)
 		usart1Clear 		= USART1->DR;			//读取DR寄存器（想读取SR，在读取DR，是为了清除IDLE中断）
 
 		Usart1ReceiveState	= 1;
-
-//		for (i = 0; i < 20; i++)
-//		{
-//			USART1_Char(Usart1Buffer[i]);
-//		}
 		
 
 		USART1_Work();

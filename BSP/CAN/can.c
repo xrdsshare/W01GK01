@@ -130,7 +130,7 @@ static void CAN_Mode_Config(void)
 	CAN_InitStructure.CAN_TTCM = DISABLE;			//MCR-TTCM	关闭时间触发通信模式使能
 	CAN_InitStructure.CAN_ABOM = ENABLE;			//MCR-ABOM	自动离线管理
 	CAN_InitStructure.CAN_AWUM = ENABLE;			//MCR-AWUM	使用自动唤醒模式
-	CAN_InitStructure.CAN_NART = ENABLE;			//MCR-NART	禁止报文自动重传	  DISABLE-自动重传
+	CAN_InitStructure.CAN_NART = DISABLE;			//MCR-NART	禁止报文自动重传	  DISABLE-自动重传
 	CAN_InitStructure.CAN_RFLM = DISABLE;			//MCR-RFLM	接收FIFO 锁定模式  DISABLE-溢出时新报文会覆盖原有报文
 	CAN_InitStructure.CAN_TXFP = DISABLE;			//MCR-TXFP	发送FIFO优先级 DISABLE-优先级取决于报文标示符
 	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;	//正常工作模式
@@ -474,26 +474,22 @@ void Can_Work(void)
 					break;
 
 				case 0x04: //主机接收从机电压数据
-					p = (u8 *) &ldVolutage;
+					CanBuffer[0] = 0xAA;
 
-					for (i = 0; i < CanBuffer[1] -3; i++)
+					for (i = 0; i < CanBuffer[1]; i++)
 					{
-						*p					= CanBuffer[3 + i];
-						USART1_Char(*p);
-						p++;
+						USART1_Char(CanBuffer[i]);
 					}
 
 					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
 				case 0x05: //主机接收从机电流数据
-					p = (u8 *) &ldVolutage;
+					CanBuffer[0] = 0xAA;
 
-					for (i = 0; i < CanBuffer[1] -3; i++)
+					for (i = 0; i < CanBuffer[1]; i++)
 					{
-						*p					= CanBuffer[3 + i];
-						USART1_Char(*p);
-						p++;
+						USART1_Char(CanBuffer[i]);
 					}
 
 					//					printf("The Curr = %Lf mA\r\n", ldVolutage);
