@@ -307,6 +307,33 @@ void CAN_Send(u32 ExtId, u8 * str, u8 len)
 }
 
 
+void CAN_Send_VC(u32 ExtId, u8 * str)
+{
+	__IO uint32_t	i	= 0;
+	__IO uint8_t	TransmitMailbox = 0;
+
+	TxMessage.ExtId 	= ExtId;					//使用的扩展ID
+	TxMessage.IDE		= CAN_ID_EXT;				//扩展模式
+	TxMessage.RTR		= CAN_RTR_DATA; 			//发送的是数据
+	TxMessage.DLC		= 8;						//设定待传输消息的帧长度
+
+	for (i = 0; i < 8; i++)
+	{
+		TxMessage.Data[i]	= *str++;				// 包含待传输数据
+	}
+
+	TransmitMailbox 	= CAN_Transmit(CAN1, &TxMessage); //开始一个消息的传输 
+
+	i					= 0;
+
+	while ((CAN_TransmitStatus(CAN1, TransmitMailbox) != CANTXOK) && (i != 0xFF)) //通过检查CANTXOK位来确认发送是否成功 
+	{
+		i++;
+	}
+
+}
+
+
 /************************************************* 
  函数: USB_LP_CAN1_RX0_IRQHandler(void)
  描述: CAN1接收中断服务函数，允许接收大于8字节的数据包
@@ -322,6 +349,7 @@ void CAN_Send(u32 ExtId, u8 * str, u8 len)
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
 	u8				i	= 0;
+	u8				id	= 0;
 
 	NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);			//失能CAN1消息接收中断
 
@@ -331,36 +359,57 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 	if (CanReceiveCounter == 0)
 	{
-		if (RxMessage.Data[0] == 0x50)
+		id					= (u8) (RxMessage.ExtId >> 16);
+
+		if (id == 0x04 || id == 0x05)
 		{
-			for (i = 0; i < RxMessage.DLC; i++)
-				CanBuffer[i] = RxMessage.Data[i];
+			USART1_Char(0xAA);
+			USART1_Char(0x0D);
+			USART1_Char(id);
+			USART1_Char((u8) ((RxMessage.ExtId & 0x0000FF00) >> 8));
+			USART1_Char((u8) (RxMessage.ExtId & 0x000000FF));
 
-			CanReceiveState 	= 1;				//接收成功	
-			CanReceiveCounter	= 0;
-
-			//			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
-		}
-		else if (RxMessage.Data[0] == 0x55)
-		{
-			CanReceiveState 	= 0;
-
-			for (i = 0; i < RxMessage.DLC; i++)
+			for (i = 0; i < 8; i++)
 			{
-				CanBuffer[i]		= RxMessage.Data[i];
-				CanReceiveCounter++;
+				USART1_Char(RxMessage.Data[i]);
 			}
 
-			CAN_Filter_Config(RxMessage.ExtId, 0xFFFF, 0xFFFF);
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else 
 		{
-			CanReceiveState 	= 0;				//接收失败
-			CanReceiveCounter	= 0;
-			CAN_Config();
-			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
+			if (RxMessage.Data[0] == 0x50)
+			{
+				for (i = 0; i < RxMessage.DLC; i++)
+					CanBuffer[i] = RxMessage.Data[i];
+
+				CanReceiveState 	= 1;			//接收成功	
+				CanReceiveCounter	= 0;
+
+				//			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
+			}
+			else if (RxMessage.Data[0] == 0x55)
+			{
+				CanReceiveState 	= 0;
+
+				for (i = 0; i < RxMessage.DLC; i++)
+				{
+					CanBuffer[i]		= RxMessage.Data[i];
+					CanReceiveCounter++;
+				}
+
+				CAN_Filter_Config(RxMessage.ExtId, 0xFFFF, 0xFFFF);
+				NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn); //使能CAN1数据接收中断
+			}
+			else 
+			{
+				CanReceiveState 	= 0;			//接收失败
+				CanReceiveCounter	= 0;
+				CAN_Config();
+				NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn); //使能CAN1数据接收中断
+			}
 		}
+
 	}
 	else if (CanBuffer[0] == 0x55 && CanReceiveCounter != 0)
 	{
@@ -424,10 +473,11 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 }*/
 void Can_Work(void)
 {
-	u8				CAN_data_com, i;
+	u8				CAN_data_com;
 	u16 			ID_1, ID_2;
 	long double 	ldVolutage;
 	u8 *			p;
+	u32 			tempId;
 
 	if (CanReceiveState == 1)
 	{
@@ -473,28 +523,22 @@ void Can_Work(void)
 
 					break;
 
-				case 0x04: //主机接收从机电压数据
-					CanBuffer[0] = 0xAA;
-
-					for (i = 0; i < CanBuffer[1]; i++)
-					{
-						USART1_Char(CanBuffer[i]);
-					}
-
-					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-					break;
-
-				case 0x05: //主机接收从机电流数据
-					CanBuffer[0] = 0xAA;
-
-					for (i = 0; i < CanBuffer[1]; i++)
-					{
-						USART1_Char(CanBuffer[i]);
-					}
-
-					//					printf("The Curr = %Lf mA\r\n", ldVolutage);
-					break;
-
+				//				case 0x04: //主机接收从机电压数据
+				//					CanBuffer[0] = 0xAA;
+				//					for (i = 0; i < CanBuffer[1]; i++)
+				//					{
+				//						USART1_Char(CanBuffer[i]);
+				//					}
+				//					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+				//					break;
+				//				case 0x05: //主机接收从机电流数据
+				//					CanBuffer[0] = 0xAA;
+				//					for (i = 0; i < CanBuffer[1]; i++)
+				//					{
+				//						USART1_Char(CanBuffer[i]);
+				//					}
+				//					//					printf("The Curr = %Lf mA\r\n", ldVolutage);
+				//					break;
 				case 0x07: //主机接收从机发送请求ID指令
 					USART_Seng_ID(ID_1);
 					break;
@@ -573,13 +617,21 @@ void Can_Work(void)
 						if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
+							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 50;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
-							Can_Seng_VC(0x05, MyID, (u8 *) &ldVolutage);
+							tempId				= 0x00050000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
 							printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 
 							G6A_Cur(OFF);
+
+						}
+						else if (SFlag == 2)
+						{
+							ldVolutage			= 0.0;
+							tempId				= 0x00050000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
 
 						}
 					}
@@ -595,9 +647,49 @@ void Can_Work(void)
 							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate / 10;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
-							Can_Seng_VC(0x04, MyID, (u8 *) &ldVolutage);
+							tempId				= 0x00040000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
 							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 							G6A_Vol(OFF);
+
+						}
+					}
+
+					break;
+
+				case 0x25: //获取数据（电压表、电流）数据指令 + ID地址
+					if (MyID == ID_1 || ID_1 == 0x8000)
+					{
+						if (SFlag == 0)
+						{
+							G6A_Vol(ON);
+							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate / 50;
+
+							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
+							tempId				= 0x00040000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
+							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+							G6A_Vol(OFF);
+
+						}
+						else if (SFlag == 1)
+						{
+							G6A_Cur(ON);
+							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
+
+							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
+							tempId				= 0x00050000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
+							printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+							G6A_Cur(OFF);
+
+						}
+						else if (SFlag == 2)
+						{
+							ldVolutage			= 0.0;
+							tempId				= 0x00050000 | MyID;
+							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
 
 						}
 					}

@@ -232,24 +232,6 @@ void Can_Seng_ID(u8 com, u16 SID)
 	Can_Send_Data(com, (u8 *) &Temp, 2);
 }
 
-
-void Can_Seng_VC(u8 com, u16 SID, u8 * p)
-{
-	u8				temp[20];
-	u8				i;
-
-	temp[0] 			= SID >> 8;
-	temp[1] 			= SID;
-
-	for (i = 0; i < 8; ++i)
-	{
-		temp[i + 2] 		= * (p + i);
-	}
-
-	Can_Send_Data(com, temp, 0x0A);
-}
-
-
 void USART_Seng_ID(u16 SID)
 {
 	USART1_Char(0xAA);

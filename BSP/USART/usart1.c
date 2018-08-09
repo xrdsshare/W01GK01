@@ -417,6 +417,10 @@ void USART1_Work(void)
 					Can_Send_Data(0x24, Usart1Buffer + 3, 2);
 					break;
 
+				case 0x25: //获取数据（电压表、电流）数据指令 + ID地址
+					Can_Send_Data(0x25, Usart1Buffer + 3, 2);
+					break;
+
 				case 0xEE: //调试使用软件复位指令
 					SoftReset();
 					break;
