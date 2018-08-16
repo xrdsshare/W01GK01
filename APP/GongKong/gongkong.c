@@ -232,6 +232,7 @@ void Can_Seng_ID(u8 com, u16 SID)
 	Can_Send_Data(com, (u8 *) &Temp, 2);
 }
 
+
 void USART_Seng_ID(u16 SID)
 {
 	USART1_Char(0xAA);
@@ -240,6 +241,7 @@ void USART_Seng_ID(u16 SID)
 	USART1_Char((u8) (SID >> 8));
 	USART1_Char((u8) SID);
 }
+
 
 
 /************************************************* 

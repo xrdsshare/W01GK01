@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>槇??鷙槇??鷙槇?</Name>
+          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>362</LineNumber>
+          <LineNumber>393</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134228238</Address>
+          <Address>134228708</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,7 +163,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\BSP\CAN\can.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\362</Expression>
+          <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\393</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
@@ -180,6 +180,22 @@
           <Filename>..\BSP\CAN\can.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\251</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>383</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134228666</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\BSP\CAN\can.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\383</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -198,12 +214,22 @@
           <WinNumber>1</WinNumber>
           <ItemText>Usart1Buffer</ItemText>
         </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>RxMessage.Data</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ldVol</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>str</ItemText>
+          <ItemText>0x20000860</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

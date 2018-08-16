@@ -350,12 +350,14 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 {
 	u8				i	= 0;
 	u8				id	= 0;
+	u16 			sId = 0;
+	long double 	ldVol = 0.59604644775390625;
+	u8 *			q;
 
 	NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);			//失能CAN1消息接收中断
 
 	//从邮箱中读出报文
 	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
-
 
 	if (CanReceiveCounter == 0)
 	{
@@ -363,17 +365,30 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 		if (id == 0x04 || id == 0x05)
 		{
-			USART1_Char(0xAA);
-			USART1_Char(0x0D);
-			USART1_Char(id);
-			USART1_Char((u8) ((RxMessage.ExtId & 0x0000FF00) >> 8));
-			USART1_Char((u8) (RxMessage.ExtId & 0x000000FF));
+			/*
+				USART1_Char(0xAA);
+				USART1_Char(0x0D);
+				USART1_Char(id);
+				USART1_Char((u8) ((RxMessage.ExtId & 0x0000FF00) >> 8));
+				USART1_Char((u8) (RxMessage.ExtId & 0x000000FF));
+
+				for (i = 0; i < 8; i++)
+				{
+					USART1_Char(RxMessage.Data[i]);
+				}
+			*/
+			sId 				= RxMessage.ExtId & 0x0000FFFF;
+			q					= (u8 *) &ldVol;
 
 			for (i = 0; i < 8; i++)
 			{
-				USART1_Char(RxMessage.Data[i]);
+				*q					= RxMessage.Data[i];
+				q++;
+
 			}
 
+			//			ldVol = 3300000.0;
+			printf("ID=%X Data=%LfuV\n", sId, ldVol);
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else 
@@ -540,31 +555,44 @@ void Can_Work(void)
 				//					//					printf("The Curr = %Lf mA\r\n", ldVolutage);
 				//					break;
 				case 0x07: //主机接收从机发送请求ID指令
-					USART_Seng_ID(ID_1);
+					//					USART_Seng_ID(ID_1);
+					printf("ID=%X\n", ID_1);
 					break;
 
 				case 0x08: //（正向供电设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+
+					/*
 					USART1_Char(0xAA);
 					USART1_Char(0x05);
 					USART1_Char(0x08);
 					USART1_Char((u8) (ID_1 >> 8));
 					USART1_Char((u8) ID_1);
+					*/
+					printf("ID=%X + \n", ID_1);
 					break;
 
 				case 0x09: //（负向供电设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+
+					/*
 					USART1_Char(0xAA);
 					USART1_Char(0x05);
 					USART1_Char(0x09);
 					USART1_Char((u8) (ID_1 >> 8));
 					USART1_Char((u8) ID_1);
+					*/
+					printf("ID=%X - \n", ID_1);
 					break;
 
 				case 0x0A: //（检测设置成功指令）主机发送电脑接收到的下位机ID CAN ID+接收ID
+
+					/*
 					USART1_Char(0xAA);
 					USART1_Char(0x05);
 					USART1_Char(0x0A);
 					USART1_Char((u8) (ID_1 >> 8));
 					USART1_Char((u8) ID_1);
+					*/
+					printf("ID=%X = \n", ID_1);
 					break;
 
 				case 0x15: //主机要求从机发送自己的ID
@@ -617,7 +645,7 @@ void Can_Work(void)
 						if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 50;
+							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate * 10.09 / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;
@@ -644,7 +672,7 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate / 10;
+							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate * 10.09;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -663,7 +691,7 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate / 50;
+							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate * 10.09;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -675,7 +703,7 @@ void Can_Work(void)
 						else if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
+							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate * 10.09 / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;

@@ -46,7 +46,8 @@ int main(void)
 
 	//	Key_Init(); 									//按键初始化
 	USART1_Config(115200);
-	USART_Seng_ID(MyID);
+//	USART_Seng_ID(MyID);
+	printf("ID=%X\n", MyID);
 
 	/* 配置CAN模块 */
 	CAN_Config();
