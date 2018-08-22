@@ -419,13 +419,28 @@ void USART1_Work(void)
 
 					for (int i = 0; i < 8; i++)
 					{
-						*q					= Usart1Buffer[3 + i];
+						* (q + i)			= Usart1Buffer[3 + i];
 					}
 
+					printf("VolRate = %2.15Lf\r\n", VolRate);
 					break;
 
 				case 0x18: //外接2.5	v设置本机自校准
 					VolRate = 2500000.0 / Git_Vol_ByAIN(VMD);
+					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
+					break;
+
+				case 0x19: //外接标准电压设置本机校准
+					q = (u8 *) &ldVolutage;
+
+					for (int i = 0; i < 8; i++)
+					{
+						* (q + i)			= Usart1Buffer[3 + i];
+					}
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+//					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					VolRate = ldVolutage / Git_Vol_ByAIN(VMD);
 					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
 					break;
 
