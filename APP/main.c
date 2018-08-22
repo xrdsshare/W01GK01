@@ -70,6 +70,7 @@ int main(void)
 
 	//	Vol_Git();
 	//	GK_Test();
+	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
 	LED0(ON);
 
 

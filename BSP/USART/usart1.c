@@ -342,6 +342,7 @@ void USART1_Work(void)
 	u16 			temp;
 	long double 	ldVolutage;
 	u8				Flash_Data[2];
+	u8 *			q;
 
 
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
@@ -411,6 +412,21 @@ void USART1_Work(void)
 					USART1_Char(0x16);
 					USART1_Char(Usart1Buffer[3]);
 					USART1_Char(Usart1Buffer[4]);
+					break;
+
+				case 0x17: //设置本机AD倍率
+					q = (u8 *) &VolRate;
+
+					for (int i = 0; i < 8; i++)
+					{
+						*q					= Usart1Buffer[3 + i];
+					}
+
+					break;
+
+				case 0x18: //外接2.5	v设置本机自校准
+					VolRate = 2500000.0 / Git_Vol_ByAIN(VMD);
+					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
 					break;
 
 				case 0x20: //负向供电指令 + ID地址
