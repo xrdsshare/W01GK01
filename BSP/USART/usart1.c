@@ -36,6 +36,9 @@ extern u8		Usart1ReceiveCounter; //串口1接收到的字符串个数
 extern u16		MyID;
 extern u8		SFlag;
 extern long double VolRate;
+extern u8		CMD; //电压通道
+extern u8		VMD; //电流通道
+
 
 
 
@@ -323,7 +326,7 @@ void USART1_IRQHandler(void)
 		usart1Clear 		= USART1->DR;			//读取DR寄存器（想读取SR，在读取DR，是为了清除IDLE中断）
 
 		Usart1ReceiveState	= 1;
-		
+
 
 		USART1_Work();
 
@@ -336,7 +339,9 @@ void USART1_IRQHandler(void)
 void USART1_Work(void)
 {
 	u8				com;
+	u16 			temp;
 	long double 	ldVolutage;
+	u8				Flash_Data[2];
 
 
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
@@ -377,12 +382,13 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
-					Vol_Git();
+					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
 				case 0x13: //读取本机电流数据指令
-					ldVolutage = Git_Vol_ByAIN(VOL_VIN0) *VolRate;
-					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					ldVolutage = Git_Vol_ByAIN(CMD) *VolRate;
+					printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 5000, ldVolutage / 5000000);
 					break;
 
 				case 0x14: //读取本机2.5标准电压指令
@@ -392,6 +398,19 @@ void USART1_Work(void)
 
 				case 0x15: //主机获取从机的ID指令
 					Can_Send_Data(0x15, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x16: //设置本机采集通道
+					temp = ((0xFF - Usart1Buffer[3]) << 8) | (0xFF - Usart1Buffer[4]);
+					Flash_Data[1] = temp & 0x00FF;
+					Flash_Data[0] = temp >> 8 & 0x00FF;
+					SetCVMD(Flash_Data);
+					STMFLASH_Write(FLASH_SAVE_ADDR + 2, (u16 *) Flash_Data, 1);
+					USART1_Char(0xAA);
+					USART1_Char(0x05);
+					USART1_Char(0x16);
+					USART1_Char(Usart1Buffer[3]);
+					USART1_Char(Usart1Buffer[4]);
 					break;
 
 				case 0x20: //负向供电指令 + ID地址

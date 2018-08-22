@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name></Name>
+          <Name>?^w璐??^w璐?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -152,41 +152,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>393</LineNumber>
+          <LineNumber>269</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134228708</Address>
+          <Address>134226604</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\BSP\CAN\can.c</Filename>
+          <Filename>..\APP\GongKong\gongkong.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\393</Expression>
+          <Expression>\\XRDS_Stm32\../APP/GongKong/gongkong.c\269</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>251</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134220978</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\BSP\CAN\can.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\251</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
           <LineNumber>383</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134228666</Address>
+          <Address>134228808</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -196,6 +180,22 @@
           <Filename>..\BSP\CAN\can.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\XRDS_Stm32\../BSP/CAN/can.c\383</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>406</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134227926</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\BSP\USART\usart1.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XRDS_Stm32\../BSP/USART/usart1.c\406</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -229,7 +229,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>0x20000860</ItemText>
+          <ItemText>0X0800FC00</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

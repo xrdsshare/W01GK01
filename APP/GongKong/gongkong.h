@@ -23,8 +23,7 @@ void GK_Test(void);
 void Can_Send_Data(u8 com, u8 * p, u8 len);
 void USART_Seng_ID(u16 SID);
 void Can_Seng_ID(u8 com, u16 SID);
-
-
+void SetCVMD(u8 Flash_Data[2]);
 
 
 #endif /* __gongkong.h */

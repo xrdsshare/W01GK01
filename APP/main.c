@@ -20,6 +20,9 @@ volatile u8 	CanBuffer[20] =
 
 
 volatile u16	MyID = 0x8000; //本机发送ID
+volatile u8 	CMD = 0;	//电压通道
+volatile u8 	VMD = 0;	//电流通道
+
 volatile u8 	SFlag = 0; //设备状态标志符， 0x00-电压检测状态、0x01-正向供电状态（电流表状态）、0x02-负向供电状态
 short			Electric_data; //电流数据
 volatile long double VolRate = 0.59604644775390625; //0.59604644775390625
@@ -27,26 +30,28 @@ volatile long	VolAGND = 0.0;
 
 u8				Flash_Data[2];
 
+
 int main(void)
 {
-//	long double 	VolAGND;
-//	long			temp1, temp2;
-
+	//	long double 	VolAGND;
+	//	long			temp1, temp2;
 	//	long double 	ldVolutage;
 	//	u8 *			p;
 	//	u8				i;
-//	long double 	vol;
-
-
+	//	long double 	vol;
 	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
 
 	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
+
+	STMFLASH_Read(FLASH_SAVE_ADDR + 2, (u16 *) Flash_Data, 1);	//读取采集通道数据
+	SetCVMD(Flash_Data);	//设置采集通道数据
 
 	LED_Init(); 									//LED 端口初始化 
 
 	//	Key_Init(); 									//按键初始化
 	USART1_Config(115200);
-//	USART_Seng_ID(MyID);
+
+	//	USART_Seng_ID(MyID);
 	printf("ID=%X\n", MyID);
 
 	/* 配置CAN模块 */
@@ -59,16 +64,12 @@ int main(void)
 	G6A_Init();
 
 	//	Vol_Calibrate_ByADR4525();						//	电压自校准
-//	printf("==============测试程序开始！==============\n");
-
-//	printf("My ID is %X\n", MyID);
-
+	//	printf("==============测试程序开始！==============\n");
+	//	printf("My ID is %X\n", MyID);
 	Can_Seng_ID(0x07, MyID);
 
-//	Vol_Git();
-//	GK_Test();
-	
-	
+	//	Vol_Git();
+	//	GK_Test();
 	LED0(ON);
 
 
@@ -79,8 +80,8 @@ int main(void)
 		//串口测试函数
 		//		USART1_Test();
 		//		Can_Text();
-//		USART1_Work();
-//		Can_Work();
+		//		USART1_Work();
+		//		Can_Work();
 	};
 }
 

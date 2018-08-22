@@ -12,6 +12,8 @@ History:
 extern u16		MyID;
 extern long 	VolAGND;
 extern long double VolRate;
+extern u8		CMD; //电压通道
+extern u8		VMD; //电流通道
 
 
 
@@ -240,6 +242,31 @@ void USART_Seng_ID(u16 SID)
 	USART1_Char(0x07);
 	USART1_Char((u8) (SID >> 8));
 	USART1_Char((u8) SID);
+}
+
+
+/************************************************* 
+ 函数: 
+ 描述: 设置电压电流采集通道函数
+ 输入: 
+	1、
+	2、
+ 返回: 
+ 调用方法: 
+	1、
+*************************************************/
+void SetCVMD(u8 Flash_Data[2])
+{
+	u8				VMDS[3] =
+	{
+		VOL_VIN0, VOL_VIN1, VOL_VIN2
+	};
+	u8				CMDS[3] =
+	{
+		VOL_CIN0, VOL_CIN1, VOL_CIN2
+	};
+	VMD 				= VMDS[0xFF - Flash_Data[0]];
+	CMD 				= CMDS[0xFF - Flash_Data[1]];
 }
 
 

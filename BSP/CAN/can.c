@@ -45,6 +45,8 @@ extern u8		CanBuffer[20];
 
 extern u16		MyID;
 extern u8		SFlag;
+extern u8		CMD; //电压通道
+extern u8		VMD; //电流通道
 
 extern long double VolRate;
 
@@ -363,7 +365,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	{
 		id					= (u8) (RxMessage.ExtId >> 16);
 
-		if (id == 0x04 || id == 0x05)
+		if (id == 0x04)			//接收电压数据
 		{
 			/*
 				USART1_Char(0xAA);
@@ -389,6 +391,22 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 			//			ldVol = 3300000.0;
 			printf("ID=%X Data=%LfuV\n", sId, ldVol);
+			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
+		}
+		else if (id == 0x05)			//接收电流数据
+		{
+			sId 				= RxMessage.ExtId & 0x0000FFFF;
+			q					= (u8 *) &ldVol;
+
+			for (i = 0; i < 8; i++)
+			{
+				*q					= RxMessage.Data[i];
+				q++;
+
+			}
+
+			//			ldVol = 3300000.0;
+			printf("ID=%X Data=%LfuA\n", sId, ldVol);
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
 		else 
@@ -519,7 +537,7 @@ void Can_Work(void)
 				case 0x01: //主机 向从机请求电压数据指令+从机地址
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate;
+						ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate;
 						p					= (u8 *) &ldVolutage;
 						Can_Send_Data(0x04, p, 2);
 
@@ -531,7 +549,7 @@ void Can_Work(void)
 				case 0x02: //主机向从机请求电流数据指令+从机地址 
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate / 10;
+						ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate / 10;
 						p					= (u8 *) &ldVolutage;
 						Can_Send_Data(0x05, p, 2);
 					}
@@ -645,7 +663,7 @@ void Can_Work(void)
 						if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate * 10.09 / 5;
+							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate * 10.09 / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;
@@ -672,7 +690,7 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate * 10.09;
+							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate * 10.09;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -691,7 +709,7 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_VIN0) *VolRate * 10.09;
+							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate * 10.09;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -703,7 +721,7 @@ void Can_Work(void)
 						else if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(VOL_CIN0) *VolRate * 10.09 / 5;
+							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate * 10.09 / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;
