@@ -638,8 +638,8 @@ void Can_Work(void)
 				case 0x21: //正向供电功能（电流表）指令 + ID地址
 					if (MyID == ID_1 || ID_1 == 0x8000)
 					{
-						PN_PP_EN(ON);
-						P_D_EN(OFF);
+						PN_PP_EN(OFF);
+						P_D_EN(ON);
 						Can_Seng_ID(0x08, MyID);
 						SFlag				= 1;
 					}
@@ -663,7 +663,9 @@ void Can_Work(void)
 						if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate * 10.09 / 5;
+							Delay_ms(500);
+							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;
@@ -690,7 +692,9 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate * 10.09;
+							Delay_ms(500);
+							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -709,7 +713,9 @@ void Can_Work(void)
 						if (SFlag == 0)
 						{
 							G6A_Vol(ON);
-							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate * 10.09;
+							Delay_ms(500);
+							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -721,7 +727,9 @@ void Can_Work(void)
 						else if (SFlag == 1)
 						{
 							G6A_Cur(ON);
-							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate * 10.09 / 5;
+							Delay_ms(500);
+							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00050000 | MyID;

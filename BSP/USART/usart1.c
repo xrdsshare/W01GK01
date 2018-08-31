@@ -383,8 +383,12 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
+					G6A_Vol(ON);
+					Delay_ms(500);
+					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
 					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					G6A_Vol(OFF);
 					break;
 
 				case 0x13: //读取本机电流数据指令
@@ -393,8 +397,11 @@ void USART1_Work(void)
 					break;
 
 				case 0x14: //读取本机2.5标准电压指令
+					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
 					ldVolutage = Git_Vol_ByAIN(VOL_ADR) *VolRate;
-					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					printf("V2.5 = %LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					ldVolutage = Git_Vol_ByAIN(VOL_AGND) *VolRate;
+					printf("VGND = %LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					break;
 
 				case 0x15: //主机获取从机的ID指令
@@ -437,9 +444,11 @@ void USART1_Work(void)
 					{
 						* (q + i)			= Usart1Buffer[3 + i];
 					}
+
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-//					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
-//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+					//					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					VolRate = ldVolutage / Git_Vol_ByAIN(VMD);
 					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
 					break;
