@@ -20,12 +20,13 @@ volatile u8 	CanBuffer[20] =
 
 
 volatile u16	MyID = 0x8000; //本机发送ID
-volatile u8 	CMD = 0;	//电压通道
-volatile u8 	VMD = 0;	//电流通道
+volatile u8 	CMD = 0; //电压通道
+volatile u8 	VMD = 0; //电流通道
 
 volatile u8 	SFlag = 0; //设备状态标志符， 0x00-电压检测状态、0x01-正向供电状态（电流表状态）、0x02-负向供电状态
 short			Electric_data; //电流数据
 volatile long double VolRate = 0.59604644775390625; //0.59604644775390625
+volatile long double VolCha = 31000; //
 volatile long	VolAGND = 0.0;
 
 u8				Flash_Data[2];
@@ -39,12 +40,38 @@ int main(void)
 	//	u8 *			p;
 	//	u8				i;
 	//	long double 	vol;
+	u8 *			p	= (u8 *) &VolRate;
+
+	//	long double 	ldTemp = 0xFFFFFFFFFFFFFFFF;
 	STMFLASH_Read(FLASH_SAVE_ADDR, (u16 *) Flash_Data, 1);
 
 	MyID				= Flash_Data[0] << 8 | Flash_Data[1];
 
-	STMFLASH_Read(FLASH_SAVE_ADDR + 2, (u16 *) Flash_Data, 1);	//读取采集通道数据
-	SetCVMD(Flash_Data);	//设置采集通道数据
+	STMFLASH_Read(FLASH_SAVE_ADDR + 2, (u16 *) Flash_Data, 1); //读取采集通道数据
+	SetCVMD(Flash_Data);							//设置采集通道数据
+
+	STMFLASH_Read(FLASH_SAVE_ADDR + 4, (u16 *) p, 8);
+
+	if (*p == 0XFF)
+	{
+		if (* (p + 1) == 0XFF)
+		{
+			VolRate 			= 0.59604644775390625;
+			STMFLASH_Write(FLASH_SAVE_ADDR+4, (u16 *)p, 8);
+		}
+	}
+
+	p					= (u8 *) &VolCha;
+	STMFLASH_Read(FLASH_SAVE_ADDR + 12, (u16 *) p, 8);
+
+	if (*p == 0XFF)
+	{
+		if (* (p + 1) == 0XFF)
+		{
+			VolCha				= 0;
+			STMFLASH_Write(FLASH_SAVE_ADDR+12, (u16 *)p, 8);
+		}
+	}
 
 	LED_Init(); 									//LED 端口初始化 
 
@@ -70,7 +97,7 @@ int main(void)
 
 	//	Vol_Git();
 	//	GK_Test();
-	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
+	//	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
 	LED0(ON);
 
 

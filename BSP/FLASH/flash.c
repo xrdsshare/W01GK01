@@ -60,10 +60,10 @@ void STMFLASH_Write_NoCheck(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t Num
 	uint16_t		i;
 
 	for (i = 0; i < NumToWrite; i++)
-		{
+	{
 		FLASH_ProgramHalfWord(WriteAddr, pBuffer[i]);
 		WriteAddr			+= 2;					//地址增加2.
-		}
+	}
 }
 
 
@@ -77,6 +77,7 @@ void STMFLASH_Write_NoCheck(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t Num
 #endif
 
 uint16_t		STMFLASH_BUF[STM_SECTOR_SIZE / 2]; //最多是2K字节
+u8		STMFLASH_BUFBit[STM_SECTOR_SIZE]; //最多是2K字节
 
 
 /************************************************* 
@@ -111,33 +112,33 @@ void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 		secremain = NumToWrite; //不大于该扇区范围
 
 	while (1)
-		{
+	{
 		STMFLASH_Read(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE, STMFLASH_BUF, STM_SECTOR_SIZE / 2); //读出整个扇区的内容
 
 		for (i = 0; i < secremain; i++) //校验数据
-			{
+		{
 			if (STMFLASH_BUF[secoff + i] != 0XFFFF)
 				break; //需要擦除	  
-			}
+		}
 
 		if (i < secremain) //需要擦除
-			{
+		{
 			FLASH_ErasePage(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE); //擦除这个扇区
 
 			for (i = 0; i < secremain; i++) //复制
-				{
+			{
 				STMFLASH_BUF[i + secoff] = pBuffer[i];
-				}
+			}
 
 			STMFLASH_Write_NoCheck(secpos * STM_SECTOR_SIZE + STM32_FLASH_BASE, STMFLASH_BUF, STM_SECTOR_SIZE / 2); //写入整个扇区  
-			}
+		}
 		else 
 			STMFLASH_Write_NoCheck(WriteAddr, pBuffer, secremain); //写已经擦除了的,直接写入扇区剩余区间.				   
 
 		if (NumToWrite == secremain)
 			break; //写入结束了
 		else //写入未结束
-			{
+		{
 			secpos++;								//扇区地址增1
 			secoff				= 0;				//偏移位置为0	 
 			pBuffer 			+= secremain;		//指针偏移
@@ -148,8 +149,8 @@ void STMFLASH_Write(uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrite)
 				secremain = STM_SECTOR_SIZE / 2; //下一个扇区还是写不完
 			else 
 				secremain = NumToWrite; //下一个扇区可以写完了
-			}
-		};
+		}
+	};
 
 	FLASH_Lock();									//上锁
 }
@@ -175,10 +176,10 @@ void STMFLASH_Read(uint32_t ReadAddr, uint16_t * pBuffer, uint16_t NumToRead)
 	uint16_t		i;
 
 	for (i = 0; i < NumToRead; i++)
-		{
+	{
 		pBuffer[i]			= STMFLASH_ReadHalfWord(ReadAddr); //读取2个字节.
 		ReadAddr			+= 2;					//偏移2个字节.	
-		}
+	}
 }
 
 

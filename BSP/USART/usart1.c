@@ -36,6 +36,7 @@ extern u8		Usart1ReceiveCounter; //串口1接收到的字符串个数
 extern u16		MyID;
 extern u8		SFlag;
 extern long double VolRate;
+extern long double VolCha;
 extern u8		CMD; //电压通道
 extern u8		VMD; //电流通道
 
@@ -340,9 +341,10 @@ void USART1_Work(void)
 {
 	u8				com;
 	u16 			temp;
-	long double 	ldVolutage;
+	long double 	temp1, temp2, ldVolutage;
 	u8				Flash_Data[2];
 	u8 *			q;
+	u16 *			p;
 
 
 	if (Usart1ReceiveState == 1) //如果接收到1帧数据
@@ -385,8 +387,11 @@ void USART1_Work(void)
 				case 0x12: //读取本机电压数据指令
 					G6A_Vol(ON);
 					Delay_ms(500);
-					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
-					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+
+					//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+					temp1 = Git_Vol_ByAIN(VMD);
+					temp2 = Git_Vol_ByAIN(VOL_VIN2);
+					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
 					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					G6A_Vol(OFF);
 					break;
@@ -397,7 +402,7 @@ void USART1_Work(void)
 					break;
 
 				case 0x14: //读取本机2.5标准电压指令
-					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+					//					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
 					ldVolutage = Git_Vol_ByAIN(VOL_ADR) *VolRate;
 					printf("V2.5 = %LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
 					ldVolutage = Git_Vol_ByAIN(VOL_AGND) *VolRate;
@@ -432,8 +437,8 @@ void USART1_Work(void)
 					printf("VolRate = %2.15Lf\r\n", VolRate);
 					break;
 
-				case 0x18: //外接2.5	v设置本机自校准
-					VolRate = 2500000.0 / Git_Vol_ByAIN(VMD);
+				case 0x18: //本机自校准
+					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
 					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
 					break;
 
@@ -480,12 +485,49 @@ void USART1_Work(void)
 					Can_Send_Data(0x25, Usart1Buffer + 3, 2);
 					break;
 
+				case 0x30: //外接2.5校准
+					p = (u16 *) &VolRate;
+					ldVolutage = 2500000.00;
+
+					//					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);					
+					temp1 = Git_Vol_ByAIN(VMD);
+					temp2 = Git_Vol_ByAIN(VOL_VIN2);
+					VolRate = (ldVolutage + VolCha) / (temp1 - temp2);
+					STMFLASH_Write(FLASH_SAVE_ADDR + 4, p, 4);
+					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
+					printf("VolRate = %LfuV\r\n", VolRate);
+					break;
+
+				case 0x31: //线损补偿
+					p = (u16 *) &ldVolutage;
+
+					for (int i = 0; i < 8; i = i + 2)
+					{
+						temp				= Usart1Buffer[4 + i] << 8 | Usart1Buffer[3 + i];
+						*p					= temp;
+						p++;
+					}
+
+					STMFLASH_Write(FLASH_SAVE_ADDR + 12, p - 4, 4);
+
+					//					ldVolutage = Git_Vol_ByAIN(VMD) *VolRate;
+					//					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);					
+					VolCha = ldVolutage;
+					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
+					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+					break;
+
 				case 0xEE: //调试使用软件复位指令
 					SoftReset();
 					break;
 
 				case 0xFF: //软件复位指令
 					Can_Send_Data(0xFF, Usart1Buffer + 3, 2);
+					break;
+
+				case 0x66: //测试指令
+					Test();
 					break;
 
 				default:

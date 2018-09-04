@@ -61,11 +61,45 @@ void Flash_Write_ID(uint16_t FMyID)
 *************************************************/
 long Git_Vol_ByAIN(char AIN_n)
 {
-	long			ulResult0, ulResult1, ulResult2;
+	long			ulResult0;
+//	long			ulResult1, ulResult2;
 
 	//			ulResult = ADS_sum( (i << 4) | ADS1256_MUXN_AINCOM);	//多通道测试
 	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
 	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+
+//	if (ulResult0 & 0x800000)
+//	{
+//		ulResult0			= ~(unsigned long)
+//		ulResult0;
+//		ulResult0			&= 0x7fffff;
+//		ulResult0			+= 1;
+//		ulResult0			= -ulResult0;
+//	}
+
+//	ulResult1			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+
+//	if (ulResult1 & 0x800000)
+//	{
+//		ulResult1			= ~(unsigned long)
+//		ulResult1;
+//		ulResult1			&= 0x7fffff;
+//		ulResult1			+= 1;
+//		ulResult1			= -ulResult1;
+//	}
+
+//	ulResult2			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
+
+//	if (ulResult2 & 0x800000)
+//	{
+//		ulResult2			= ~(unsigned long)
+//		ulResult2;
+//		ulResult2			&= 0x7fffff;
+//		ulResult2			+= 1;
+//		ulResult2			= -ulResult2;
+//	}
+
+//	return (ulResult0 + ulResult1 + ulResult2) / 3;
 
 	if (ulResult0 & 0x800000)
 	{
@@ -75,30 +109,7 @@ long Git_Vol_ByAIN(char AIN_n)
 		ulResult0			+= 1;
 		ulResult0			= -ulResult0;
 	}
-
-	ulResult1			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
-
-	if (ulResult1 & 0x800000)
-	{
-		ulResult1			= ~(unsigned long)
-		ulResult1;
-		ulResult1			&= 0x7fffff;
-		ulResult1			+= 1;
-		ulResult1			= -ulResult1;
-	}
-
-	ulResult2			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
-
-	if (ulResult2 & 0x800000)
-	{
-		ulResult2			= ~(unsigned long)
-		ulResult2;
-		ulResult2			&= 0x7fffff;
-		ulResult2			+= 1;
-		ulResult2			= -ulResult2;
-	}
-
-	return (ulResult0 + ulResult1 + ulResult2) / 3;
+	return ulResult0;
 }
 
 
@@ -269,6 +280,15 @@ void SetCVMD(u8 Flash_Data[2])
 	CMD 				= CMDS[0xFF - Flash_Data[1]];
 }
 
+void Test(void)
+{
+	long double temp1, temp2, vol;
+	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+	temp1			= Git_Vol_ByAIN(VOL_VIN1);
+	temp2			= Git_Vol_ByAIN(VOL_VIN2);
+	vol = (temp1 - temp2) * VolRate;
+	printf("%LfuV, %LfmV, %LfV\r\n", vol, vol / 1000, vol / 1000000);
+}
 
 
 /************************************************* 

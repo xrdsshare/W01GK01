@@ -49,6 +49,8 @@ extern u8		CMD; //电压通道
 extern u8		VMD; //电流通道
 
 extern long double VolRate;
+extern long double VolCha;
+
 
 /************************************************* 
  函数: CAN_NVIC_Config(void)
@@ -365,7 +367,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 	{
 		id					= (u8) (RxMessage.ExtId >> 16);
 
-		if (id == 0x04)			//接收电压数据
+		if (id == 0x04) //接收电压数据
 		{
 			/*
 				USART1_Char(0xAA);
@@ -393,7 +395,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 			printf("ID=%X Data=%LfuV\n", sId, ldVol);
 			NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);	//使能CAN1数据接收中断
 		}
-		else if (id == 0x05)			//接收电流数据
+		else if (id == 0x05) //接收电流数据
 		{
 			sId 				= RxMessage.ExtId & 0x0000FFFF;
 			q					= (u8 *) &ldVol;
@@ -508,7 +510,7 @@ void Can_Work(void)
 {
 	u8				CAN_data_com;
 	u16 			ID_1, ID_2;
-	long double 	ldVolutage;
+	long double 	temp1, temp2, ldVolutage;
 	u8 *			p;
 	u32 			tempId;
 
@@ -664,7 +666,8 @@ void Can_Work(void)
 						{
 							G6A_Cur(ON);
 							Delay_ms(500);
-							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+
+							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
 							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
@@ -693,8 +696,11 @@ void Can_Work(void)
 						{
 							G6A_Vol(ON);
 							Delay_ms(500);
-							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
-							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate;
+
+							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+							temp1				= Git_Vol_ByAIN(VMD);
+							temp2				= Git_Vol_ByAIN(VOL_VIN2);
+							ldVolutage			= ((temp1 - temp2) *VolRate) -VolCha;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -714,8 +720,11 @@ void Can_Work(void)
 						{
 							G6A_Vol(ON);
 							Delay_ms(500);
-							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
-							ldVolutage			= Git_Vol_ByAIN(VMD) *VolRate;
+
+							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+							temp1				= Git_Vol_ByAIN(VMD);
+							temp2				= Git_Vol_ByAIN(VOL_VIN2);
+							ldVolutage			= ((temp1 - temp2) *VolRate) -VolCha;
 
 							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
 							tempId				= 0x00040000 | MyID;
@@ -728,7 +737,8 @@ void Can_Work(void)
 						{
 							G6A_Cur(ON);
 							Delay_ms(500);
-							VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
+
+							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
 							ldVolutage			= Git_Vol_ByAIN(CMD) *VolRate / 5;
 
 							//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
