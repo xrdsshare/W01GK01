@@ -16,6 +16,7 @@
 u16 Flash_Read_ID(void);
 void Flash_Write_ID(uint16_t MyID);
 long Git_Vol_ByAIN(char AIN_n);
+long double Git_Vol_ByDBL(char AIN_n);
 void Get_Elc_ByUSART(void);
 //long double Git_Vol(void);
 void Vol_Git(void);

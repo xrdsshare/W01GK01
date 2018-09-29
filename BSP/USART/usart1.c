@@ -385,20 +385,32 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
-					G6A_Vol(ON);
+//					G6A_Vol(ON);
 					Delay_ms(500);
 
 					//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
-					temp1 = Git_Vol_ByAIN(VMD);
-					temp2 = Git_Vol_ByAIN(VOL_VIN2);
-					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
-					printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-					G6A_Vol(OFF);
+//					temp1 = Git_Vol_ByAIN(VMD);
+
+					//					temp2 = Git_Vol_ByAIN(VOL_VIN2);
+					//					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
+					ldVolutage = (Git_Vol_ByDBL(VMD) * VolRate) -VolCha;
+					printf("%Lf\r\n", ldVolutage / 1000000);
+//					G6A_Vol(OFF);
 					break;
 
 				case 0x13: //读取本机电流数据指令
-					ldVolutage = Git_Vol_ByAIN(CMD) *VolRate;
-					printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 5000, ldVolutage / 5000000);
+					G6A_Cur(ON);
+					Delay_ms(1000);
+
+					//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+					ldVolutage = Git_Vol_ByAIN(VOL_CIN0) *VolRate / 5;
+
+					//							Can_Send_Data(0x05, (u8 *) &ldVolutage, 8);
+					//					tempId				= 0x00050000 | MyID;
+					//					CAN_Send_VC(tempId, (u8 *) &ldVolutage);
+					printf("%LfuA, %LfmA, %LfA\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+
+					//					G6A_Cur(OFF);
 					break;
 
 				case 0x14: //读取本机2.5标准电压指令
@@ -438,7 +450,7 @@ void USART1_Work(void)
 					break;
 
 				case 0x18: //本机自校准
-					VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
+					VolRate = 2500000.0 / Git_Vol_ByDBL(VOL_ADR);
 					printf("VolRate = %2.10Lf, V2.5 = %LfV\r\n", VolRate, Git_Vol_ByAIN(VOL_ADR) *VolRate / 1000000);
 					break;
 

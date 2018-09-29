@@ -62,44 +62,11 @@ void Flash_Write_ID(uint16_t FMyID)
 long Git_Vol_ByAIN(char AIN_n)
 {
 	long			ulResult0;
-//	long			ulResult1, ulResult2;
 
+	//	long			ulResult1, ulResult2;
 	//			ulResult = ADS_sum( (i << 4) | ADS1256_MUXN_AINCOM);	//多通道测试
 	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
 	ulResult0			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
-
-//	if (ulResult0 & 0x800000)
-//	{
-//		ulResult0			= ~(unsigned long)
-//		ulResult0;
-//		ulResult0			&= 0x7fffff;
-//		ulResult0			+= 1;
-//		ulResult0			= -ulResult0;
-//	}
-
-//	ulResult1			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
-
-//	if (ulResult1 & 0x800000)
-//	{
-//		ulResult1			= ~(unsigned long)
-//		ulResult1;
-//		ulResult1			&= 0x7fffff;
-//		ulResult1			+= 1;
-//		ulResult1			= -ulResult1;
-//	}
-
-//	ulResult2			= ADS_sum(AIN_n | ADS1256_MUXN_AINCOM); //单通道测试
-
-//	if (ulResult2 & 0x800000)
-//	{
-//		ulResult2			= ~(unsigned long)
-//		ulResult2;
-//		ulResult2			&= 0x7fffff;
-//		ulResult2			+= 1;
-//		ulResult2			= -ulResult2;
-//	}
-
-//	return (ulResult0 + ulResult1 + ulResult2) / 3;
 
 	if (ulResult0 & 0x800000)
 	{
@@ -109,8 +76,45 @@ long Git_Vol_ByAIN(char AIN_n)
 		ulResult0			+= 1;
 		ulResult0			= -ulResult0;
 	}
+
 	return ulResult0;
 }
+
+
+long double Git_Vol_ByDBL(char AIN_n)
+{
+	long double 	temp[12];
+	long double 	val;
+
+	for (int i = 0; i < 12; i++)
+	{
+		temp[i] 			= Git_Vol_ByAIN(AIN_n);
+	}
+
+	for (int i = 0; i < 11; i++)
+	{
+		for (int j = 0; j < 11 - i; j++)
+		{
+			if (temp[j + 1] < temp[j])
+			{
+				val 				= temp[j];
+				temp[j] 			= temp[j + 1];
+				temp[j + 1] 		= val;
+			}
+		}
+	}
+
+	val 				= temp[1];
+
+	for (int i = 0; i < 9; i++)
+	{
+		val 				= (val + temp[i + 2]) / 2;
+	}
+
+	return val;
+
+}
+
 
 
 //can发送电压数据
@@ -280,13 +284,15 @@ void SetCVMD(u8 Flash_Data[2])
 	CMD 				= CMDS[0xFF - Flash_Data[1]];
 }
 
+
 void Test(void)
 {
-	long double temp1, temp2, vol;
-	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);				//检测前自校验
-	temp1			= Git_Vol_ByAIN(VOL_VIN1);
-	temp2			= Git_Vol_ByAIN(VOL_VIN2);
-	vol = (temp1 - temp2) * VolRate;
+	long double 	temp1, temp2, vol;
+
+	VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+	temp1				= Git_Vol_ByAIN(VOL_VIN1);
+	temp2				= Git_Vol_ByAIN(VOL_VIN2);
+	vol 				= (temp1 - temp2) *VolRate;
 	printf("%LfuV, %LfmV, %LfV\r\n", vol, vol / 1000, vol / 1000000);
 }
 
