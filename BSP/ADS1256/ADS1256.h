@@ -21,6 +21,14 @@
 #define GPIO_ADS1256DRDY                            GPIO_Pin_10
 
 
+// 定义STATUS寄存器设置
+#define ADS1256_SIGNIFICANT_MOST   0x00  
+#define ADS1256_SIGNIFICANT_LEAST    0x08
+#define ADS1256_ACAL_ENABLED   0x04
+#define ADS1256_ACAL_DISABLED    0x00
+#define ADS1256_BUFEN_ENABLED   0x02
+#define ADS1256_BUFEN_DISABLED    0x00
+
 
 
 // define commands
@@ -107,6 +115,7 @@ unsigned int ADS1256ReadData(void);
 void ADS1256_Init(void);   //初始化ADS1256
 void Init_ADS1256_GPIO(void);
 void Delay(unsigned int dal);
+unsigned char SPI_WriteByte(unsigned char TxData);
 unsigned int ADS_sum(unsigned char road);
 #endif
 

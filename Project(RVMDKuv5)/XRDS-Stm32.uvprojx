@@ -411,6 +411,11 @@
               <FileType>1</FileType>
               <FilePath>..\APP\GongKong\gongkong.c</FilePath>
             </File>
+            <File>
+              <FileName>VolMeasure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\GongKong\VolMeasure.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

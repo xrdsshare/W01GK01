@@ -1,6 +1,8 @@
 
 #include "app_includes.h"
 
+#define PGA 					2
+
 //用volatile定义的变量会在程序外被改变,每次都必须从内存中读取，而不能重复使用放在cache或寄存器中的备份。
 volatile u8 	Usart1ReceiveState = 0; //串口1接收不定长度字符串结束标识符
 volatile u8 	Usart1ReceiveCounter = 0; //串口1接收到的字符串个数
@@ -28,6 +30,13 @@ short			Electric_data; //电流数据
 volatile long double VolRate = 0.59604644775390625; //0.59604644775390625
 volatile long double VolCha = 31000; //
 volatile long	VolAGND = 0.0;
+
+volatile long double ADC_Rate = 0.59604651880818829634050087219487; //(计算)
+volatile long double Rev_Rate = 1.0; //修正倍率
+volatile long double Vol_Rate = 1.0; //
+volatile long double Rev0_0 = 0.0; //修正偏移参数1
+volatile long double Rev0_1 = 0.0; //修正偏移参数2
+
 
 u8				Flash_Data[2];
 
@@ -57,7 +66,7 @@ int main(void)
 		if (* (p + 1) == 0XFF)
 		{
 			VolRate 			= 0.59604644775390625;
-			STMFLASH_Write(FLASH_SAVE_ADDR+4, (u16 *)p, 8);
+			STMFLASH_Write(FLASH_SAVE_ADDR + 4, (u16 *) p, 8);
 		}
 	}
 
@@ -69,9 +78,11 @@ int main(void)
 		if (* (p + 1) == 0XFF)
 		{
 			VolCha				= 0;
-			STMFLASH_Write(FLASH_SAVE_ADDR+12, (u16 *)p, 8);
+			STMFLASH_Write(FLASH_SAVE_ADDR + 12, (u16 *) p, 8);
 		}
 	}
+
+	Vol_Rate			= ADC_Rate * Rev_Rate / PGA;
 
 	LED_Init(); 									//LED 端口初始化 
 
@@ -98,6 +109,9 @@ int main(void)
 	//	Vol_Git();
 	//	GK_Test();
 	//	VolRate = 2500000.0 / Git_Vol_ByAIN(VOL_ADR);
+	
+	Vol_Rate			= ADC_Rate * Rev_Rate / PGA;
+	
 	LED0(ON);
 
 

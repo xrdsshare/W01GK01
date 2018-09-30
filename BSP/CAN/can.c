@@ -51,6 +51,13 @@ extern u8		VMD; //电流通道
 extern long double VolRate;
 extern long double VolCha;
 
+extern long double ADC_Rate;
+extern long double Rev_Rate;
+extern long double Vol_Rate;
+extern long double Rev0_0;
+extern long double Rev0_1;
+
+
 
 /************************************************* 
  函数: CAN_NVIC_Config(void)
@@ -694,20 +701,21 @@ void Can_Work(void)
 					{
 						if (SFlag == 0)
 						{
-							G6A_Vol(ON);
-							Delay_ms(500);
+							//							G6A_Vol(ON);
+							//							Delay_ms(500);
+							//							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
+							//							temp1				= Git_Vol_ByAIN(VMD);
+							//							temp2				= Git_Vol_ByAIN(VOL_VIN2);
+							//							ldVolutage			= ((temp1 - temp2) *VolRate) -VolCha;
+							//							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
+							//							tempId				= 0x00040000 | MyID;
+							//							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
+							//							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
+							//							G6A_Vol(OFF);
+							ldVolutage			= Vol_Meas();
 
-							//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
-							temp1				= Git_Vol_ByAIN(VMD);
-							temp2				= Git_Vol_ByAIN(VOL_VIN2);
-							ldVolutage			= ((temp1 - temp2) *VolRate) -VolCha;
-
-							//							Can_Send_Data(0x04, (u8 *) &ldVolutage, 8);
-							tempId				= 0x00040000 | MyID;
-							CAN_Send_VC(tempId, (u8 *) &ldVolutage);
-							printf("%LfuV, %LfmV, %LfV\r\n", ldVolutage, ldVolutage / 1000, ldVolutage / 1000000);
-							G6A_Vol(OFF);
-
+							printf("v%.9Lfv, m%.6Lfm, u%.3Lfu\r\n", ldVolutage / 1000000, ldVolutage / 1000,
+								 ldVolutage);		//double
 						}
 					}
 

@@ -385,17 +385,19 @@ void USART1_Work(void)
 					break;
 
 				case 0x12: //读取本机电压数据指令
-//					G6A_Vol(ON);
+					//					G6A_Vol(ON);
 					Delay_ms(500);
 
 					//							VolRate 			= 2500000.0 / Git_Vol_ByAIN(VOL_ADR); //检测前自校验
-//					temp1 = Git_Vol_ByAIN(VMD);
-
+					//					temp1 = Git_Vol_ByAIN(VMD);
 					//					temp2 = Git_Vol_ByAIN(VOL_VIN2);
 					//					ldVolutage = ((temp1 - temp2) *VolRate) -VolCha;
-					ldVolutage = (Git_Vol_ByDBL(VMD) * VolRate) -VolCha;
-					printf("%Lf\r\n", ldVolutage / 1000000);
-//					G6A_Vol(OFF);
+					//					ldVolutage = (Git_Vol_ByDBL(VMD) * VolRate) -VolCha;
+					//					printf("%Lf\r\n", ldVolutage / 1000000);
+					//					G6A_Vol(OFF);
+					ldVolutage = Vol_Meas();
+					printf("v%.9Lfv, m%.6Lfm, u%.3Lfu\r\n", ldVolutage / 1000000, ldVolutage / 1000, 
+						ldVolutage); //double
 					break;
 
 				case 0x13: //读取本机电流数据指令

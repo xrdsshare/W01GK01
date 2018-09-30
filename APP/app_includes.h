@@ -11,6 +11,7 @@
 #include <stdarg.h> 
 
 #include "app_defines.h"
+#include "VolMeasure.h"
 #include "reset.h"
 #include "delay.h"
 #include "led.h"
